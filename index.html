@@ -9,7 +9,10 @@
   html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic";background:linear-gradient(180deg,#071024,#041026);color:#e6eef6}
   .container{max-width:1100px;margin:28px auto;padding:18px}
   h1{margin:0 0 12px;font-size:20px}
-  .layout{display:grid;grid-template-columns:1fr 380px;gap:18px}
+  .layout{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
+  @media (max-width: 900px) {
+    .layout { display:block; }
+  }
   .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
   label{display:block;margin:10px 0 6px;color:var(--muted);font-size:13px}
   input[type=text], textarea, select {width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
@@ -45,7 +48,24 @@
   </header>
 
   <div class="layout">
-    <!-- left: submission + entries -->
+    <!-- 왼쪽: 도감 항목 -->
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2>도감 항목</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="small-muted">총 항목: <span id="entriesCount">0</span></div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="검색 (이름/태그)" />
+          <button id="clearFilter" class="btn-ghost" type="button">초기화</button>
+        </div>
+        <div id="entries" class="entry-list"></div>
+      </div>
+    </div>
+    <!-- 오른쪽: 새 게이 만들기 -->
     <div>
       <div class="card" id="submitCard">
         <h2>새 게이 만들기</h2>
@@ -60,46 +80,23 @@
           <button id="addStatBtn" type="button">추가</button>
         </div>
         <div id="statsContainer" class="small-muted" style="margin-top:8px"></div>
-
         <label for="tags">태그 (쉼표로 구분)</label>
         <input id="tags" type="text" placeholder="예: 어패류,류광원" />
-
         <label for="img">이미지 (선택)</label>
         <input id="img" type="file" accept="image/*" />
         <div class="preview" style="margin-top:8px">
           <div class="muted small">미리보기</div>
           <img id="imgPreview" src="" alt="" style="width:100%;height:200px;object-fit:contain;border-radius:8px;display:none;margin-top:8px" />
         </div>
-
         <div class="controls">
           <button id="submitBtn" type="button">제출</button>
           <button id="clearForm" class="btn-ghost" type="button">폼 초기화</button>
           <div class="small-muted">제출하면 바로 공개됩니다.</div>
         </div>
-
         <div id="submitMsg" class="small-muted" style="margin-top:10px"></div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h2>도감 항목</h2>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="small-muted">총 항목: <span id="entriesCount">0</span></div>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="search">
-          <input id="searchInput" type="text" placeholder="검색 (이름/태그)" />
-          <button id="clearFilter" class="btn-ghost" type="button">초기화</button>
-        </div>
-
-        <div id="entries" class="entry-list"></div>
       </div>
     </div>
   </div>
-
   <footer>
     내부 테스트용 도감 시스템 — 제출 시 바로 공개됩니다.
   </footer>
@@ -114,11 +111,9 @@ const firebaseConfig = {
   appId: "1:505108692237:web:1e7bf3d6f855db7b238444",
   measurementId: "G-MCNTRDN70C"
 };
-// 반드시 이 두 줄 추가!!
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* 2. UI 및 데이터 처리 */
 const MAX_TITLE = 80;
 const MAX_DESC = 2000;
 let currentStats = {};
