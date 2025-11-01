@@ -22,7 +22,7 @@
   .small{font-size:13px}
   .preview{border-radius:8px;overflow:hidden;background:var(--glass);padding:8px}
   .entry-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
-  .entry{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:10px;border-radius:10px}
+  .entry{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:10px;border-radius:10px;position:relative;}
   .entry img{width:100%;height:140px;object-fit:cover;border-radius:6px}
   .tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
   .tag{background:rgba(255,255,255,0.04);padding:4px 8px;border-radius:6px;font-size:12px;color:var(--muted)}
@@ -31,6 +31,13 @@
   .small-muted{font-size:12px;color:var(--muted)}
   .search{display:flex;gap:8px;align-items:center;margin-bottom:8px}
   .search input{flex:1}
+  .like-btn{background:var(--glass);color:var(--accent);border:1px solid var(--accent);margin-right:8px;padding:4px 10px;border-radius:16px;font-size:13px;transition:background .15s;}
+  .like-btn.liked{background:var(--accent);color:#fff;border:1px solid var(--accent);}
+  .comments-section{margin-top:12px;background:rgba(255,255,255,0.02);padding:10px 8px 8px 8px;border-radius:8px;}
+  .comment-item{margin-bottom:8px;font-size:13px;}
+  .comment-meta{color:var(--muted);font-size:12px;}
+  .comment-form{display:flex;gap:6px;margin-top:6px;}
+  .comment-form input{flex:1;}
   footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
   .btn-ghost { background: none; color: var(--muted); border: 1px solid rgba(255,255,255,0.15); font-weight: normal; transition: background 0.2s; }
   .btn-ghost:hover { background: var(--glass); color: var(--accent);}
@@ -46,7 +53,6 @@
     <h1>게이 도감</h1>
     <div class="muted small">게이를 등록할 수 있는 사이트</div>
   </header>
-
   <div class="layout">
     <!-- 왼쪽: 도감 항목 -->
     <div>
@@ -117,7 +123,7 @@ const db = firebase.firestore();
 const MAX_TITLE = 80;
 const MAX_DESC = 2000;
 let currentStats = {};
-let cachedEntries = []; // Firestore에서 불러온 데이터
+let cachedEntries = [];
 
 const titleEl = document.getElementById('title');
 const descEl = document.getElementById('desc');
@@ -187,7 +193,7 @@ submitBtn.addEventListener('click', async () => {
     });
   }
 
-  const entry = { title, desc, tags, stats: {...currentStats}, imageDataURL: imageData, approvedAt: Date.now() };
+  const entry = { title, desc, tags, stats: {...currentStats}, imageDataURL: imageData, approvedAt: Date.now(), likes: 0 };
   try {
     await db.collection('catalog_entries').add(entry);
     submitMsg.textContent = '제출 완료 — 공개됨';
@@ -206,19 +212,97 @@ async function fetchEntries(){
   renderEntries();
 }
 
-/* 렌더링 */
+/* 좋아요(Like) 기능: LocalStorage로 1회 제한 */
+function isLiked(entryId) {
+  try {
+    const liked = JSON.parse(localStorage.getItem("catalog_likes")||"{}");
+    return !!liked[entryId];
+  } catch { return false; }
+}
+function setLiked(entryId) {
+  let liked = {};
+  try { liked = JSON.parse(localStorage.getItem("catalog_likes")||"{}"); } catch {}
+  liked[entryId] = 1;
+  localStorage.setItem("catalog_likes", JSON.stringify(liked));
+}
+
+/* 댓글 렌더링 */
+async function renderComments(entryId, container) {
+  container.innerHTML = `<div class="small-muted">불러오는 중...</div>`;
+  const snap = await db.collection('catalog_entries').doc(entryId).collection('comments').orderBy('createdAt', 'asc').get();
+  const list = snap.docs.map(doc => doc.data());
+  if(list.length === 0) {
+    container.innerHTML = '<div class="small-muted">아직 댓글이 없습니다.</div>';
+  } else {
+    container.innerHTML = list.map(c =>
+      `<div class="comment-item">
+        <div>${escapeHtml(c.text)}</div>
+        <div class="comment-meta">${escapeHtml(c.author||"익명")} · ${timeAgo(c.createdAt)}</div>
+      </div>`
+    ).join('');
+  }
+}
+
+/* 도감 항목 및 댓글/좋아요 UI */
 function renderEntries() {
   entriesContainer.innerHTML='';
   const q = (searchInput.value||'').trim().toLowerCase();
   let items = cachedEntries.slice();
   if (q) items = items.filter(it => (it.title||'').toLowerCase().includes(q) || (it.tags||[]).some(t=>t.toLowerCase().includes(q)) || (it.desc||'').toLowerCase().includes(q));
   entriesCount.textContent = items.length;
-  if (!items.length){ entriesContainer.innerHTML='<div class="muted small">표시할 항목이 없습니다.</div>'; return; }
+  if (!items.length){
+    entriesContainer.innerHTML='<div class="muted small">표시할 항목이 없습니다.</div>'; return;
+  }
   for (const it of items){
     const div = document.createElement('div'); div.className='entry';
     const imgHtml = it.imageDataURL? `<img src="${it.imageDataURL}" alt="img"/>`:`<div style="width:100%;height:140px;border-radius:6px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">이미지 없음</div>`;
-    div.innerHTML=`${imgHtml}<h3 style="margin:8px 0 4px;font-size:16px">${escapeHtml(it.title)}</h3><div class="meta">${escapeHtml(sliceText(it.desc,140))}</div><div class="tags">${(it.tags||[]).map(t=>`<div class="tag">${escapeHtml(t)}</div>`).join('')}</div><div class="meta" style="margin-top:8px">${renderStatsInline(it.stats)}</div>`;
+    // 좋아요 버튼/카운트
+    const liked = isLiked(it.id);
+    const likeBtn = `<button class="like-btn${liked?' liked':''}" data-like="${it.id}" ${liked?'disabled':''}>👍 ${it.likes||0}</button>`;
+    // 댓글 영역
+    const commentWrapperId = "comments-"+it.id;
+    const commentFormId = "commentform-"+it.id;
+    div.innerHTML=`
+      ${imgHtml}
+      <h3 style="margin:8px 0 4px;font-size:16px">${escapeHtml(it.title)}</h3>
+      <div class="meta">${escapeHtml(sliceText(it.desc,140))}</div>
+      <div class="tags">${(it.tags||[]).map(t=>`<div class="tag">${escapeHtml(t)}</div>`).join('')}</div>
+      <div class="meta" style="margin-top:8px">${renderStatsInline(it.stats)}</div>
+      <div style="margin-top:12px">${likeBtn}</div>
+      <div class="comments-section">
+        <div id="${commentWrapperId}"></div>
+        <form id="${commentFormId}" class="comment-form" autocomplete="off">
+          <input name="author" type="text" placeholder="닉네임(선택)" maxlength="20" style="max-width:80px;">
+          <input name="text" type="text" placeholder="댓글을 입력하세요" maxlength="100" required>
+          <button type="submit">댓글</button>
+        </form>
+      </div>
+    `;
     entriesContainer.appendChild(div);
+
+    // 좋아요 버튼 이벤트
+    div.querySelector('[data-like]').onclick = async function() {
+      if (isLiked(it.id)) return;
+      setLiked(it.id);
+      await db.collection('catalog_entries').doc(it.id).update({ likes: (it.likes||0)+1 });
+      await fetchEntries();
+    };
+
+    // 댓글 렌더링 및 작성 이벤트
+    const commentCont = div.querySelector("#"+commentWrapperId);
+    renderComments(it.id, commentCont);
+    const form = div.querySelector("#"+commentFormId);
+    form.onsubmit = async (e)=>{
+      e.preventDefault();
+      const author = form.author.value.trim().slice(0,20) || "익명";
+      const text = form.text.value.trim().slice(0,100);
+      if(!text) return;
+      await db.collection('catalog_entries').doc(it.id).collection('comments').add({
+        author, text, createdAt:Date.now()
+      });
+      form.text.value = '';
+      renderComments(it.id, commentCont);
+    };
   }
 }
 
@@ -226,6 +310,15 @@ function renderEntries() {
 function sliceText(s,n){if(!s)return''; return s.length>n?s.slice(0,n-1)+'…':s;}
 function escapeHtml(s){if(!s)return''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderStatsInline(obj){if(!obj)return''; return Object.entries(obj).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v)}`).join(' · ');}
+function timeAgo(ts){
+  if (!ts) return '';
+  const now = Date.now();
+  const sec = Math.floor((now - ts)/1000);
+  if (sec<60) return sec+"초 전";
+  if (sec<3600) return Math.floor(sec/60)+"분 전";
+  if (sec<86400) return Math.floor(sec/3600)+"시간 전";
+  return Math.floor(sec/86400)+"일 전";
+}
 
 /* 검색 */
 searchInput.addEventListener('input', renderEntries);
