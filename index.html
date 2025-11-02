@@ -1,107 +1,1055 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>ACP 재단 - Azoral, Contain, Porn</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<style>
-body { margin:0; font-family:'Malgun Gothic',Arial,sans-serif; background:#222; color:#eee; }
-header { background:#111; padding:24px 0 10px; text-align:center; border-bottom:4px solid #f44; }
-header h1{ margin:0; font-size:2.3em; } header h2{ margin:11px 0 0; color:#f44; font-size:1.1em; }
-.container { max-width:900px; margin:30px auto; padding:24px; background:#292929; border-radius:8px; }
-.hidden{display:none;}
-nav { background:#191919; padding:7px 0; text-align:center; border-bottom:2px solid #444; }
-nav button{ background:none; border:none; color:#f44; margin:0 10px; font-size:1.1em; cursor:pointer; }
-.board-post, .comment{background:#181818; margin:18px 0; padding:14px 12px; border-left:5px solid #f44; border-radius:6px;}
-.board-post .title{font-size:1.18em; color:#fff; margin-bottom:7px;}
-input, textarea{background:#222; color:#eee; border:1px solid #444; border-radius:4px; padding:6px 8px; margin-bottom:8px;}
-.btn{background:#f44; color:#fff; border:none; padding:7px 15px; border-radius:5px; cursor:pointer;}
-.btn:disabled{background:#555;}
-.err{color:#f44; margin:7px 0;}
-.info{color:#4af; margin:7px 0;}
-.modal-backdrop {position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; transition:0.25s;}
-.modal-backdrop.show{opacity:1;}
-.modal {background:#1e1e1e; padding:20px; border-radius:8px; width:320px; box-shadow:0 6px 24px rgba(0,0,0,0.6);}
-#change-nick-floating{position:fixed; bottom:10px; right:10px; font-size:11px; opacity:0.45; padding:4px 6px;}
-#change-nick-floating:hover{opacity:1;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP재단 - 아조랄, 격리, 포르노노</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Courier', monospace;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .top-bar {
+            background: linear-gradient(to bottom, #222, #000);
+            color: #fff;
+            padding: 5px 20px;
+            font-size: 0.85em;
+            text-align: right;
+        }
+
+        .top-bar a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .top-bar a:hover {
+            color: #fff;
+        }
+
+        .header {
+            background: linear-gradient(to bottom, #111, #000);
+            color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid #c00;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .header .motto {
+            font-size: 1.1em;
+            color: #c00;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .nav {
+            background-color: #222;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav li {
+            position: relative;
+        }
+
+        .nav a {
+            display: block;
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 25px;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: #c00;
+        }
+
+        .nav .active {
+            background-color: #c00;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 70px;
+        }
+
+        .sidebar h3 {
+            color: #c00;
+            border-bottom: 2px solid #c00;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 5px;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #f0f0f0;
+            padding-left: 10px;
+            color: #c00;
+        }
+
+        .main-content {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .classification-box {
+            background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+            border: 2px solid #c00;
+            border-left: 6px solid #c00;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .classification-box h2 {
+            color: #c00;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .class-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            color: #222;
+        }
+
+        .class-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .safe { background-color: #28a745; }
+        .euclid { background-color: #ffc107; color: #000; }
+        .keter { background-color: #dc3545; }
+        .thaumiel { background-color: #000; }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 3px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .warning-box strong {
+            color: #856404;
+            font-size: 1.2em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #c00;
+            border-bottom: 2px solid #c00;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .redacted {
+            background-color: #000;
+            color: #000;
+            padding: 2px 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s;
+        }
+
+        .redacted:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .image-container {
+            background-color: #e9e9e9;
+            border: 3px dashed #999;
+            padding: 80px;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+
+        .addendum {
+            background-color: #f9f9f9;
+            border: 2px solid #ddd;
+            border-left: 5px solid #c00;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .addendum-title {
+            font-weight: bold;
+            color: #c00;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .experiment-log {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #c00;
+        }
+
+        .scp-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .scp-card {
+            background: #f8f8f8;
+            border: 2px solid #ddd;
+            border-left: 5px solid #c00;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scp-card:hover {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .scp-card h4 {
+            color: #c00;
+            margin-bottom: 10px;
+        }
+
+        .personnel-card {
+            background: #fff;
+            border: 2px solid #ddd;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .personnel-card h4 {
+            color: #c00;
+            margin-bottom: 10px;
+        }
+
+        .clearance-level {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #000;
+            color: #fff;
+            font-size: 0.9em;
+            border-radius: 3px;
+        }
+
+        .footer {
+            background: #111;
+            color: #fff;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .footer a {
+            color: #c00;
+            text-decoration: none;
+        }
+
+        .incident-report {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .incident-report h4 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border: 2px solid #c00;
+        }
+
+        .login-box h3 {
+            color: #c00;
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #c00;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .login-box button:hover {
+            background: #a00;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #c00;
+            color: #fff;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
+    <div class="top-bar">
+        로그인 상태: <span id="userStatus">게스트</span>
+        <a href="#" onclick="showPage('login')">로그인</a>
+        <a href="#" onclick="showPage('settings')">설정</a>
+    </div>
 
-<header>
-<h1>ACP 재단</h1>
-<h2>아조랄, 격리, 포르노</h2>
-</header>
+    <div class="header">
+        <h1>ACP 재단</h1>
+        <p class="motto">아조랄(Azoral),격리(Contain), 포르노(Porn)</p>
+    </div>
 
-<nav>
-<button onclick="showPage('board')">게시판</button>
-<button onclick="showPage('profile')">프로필</button>
-</nav>
+    <nav class="nav">
+        <ul>
+            <li><a href="#" onclick="showPage('home')" class="active">홈</a></li>
+            <li><a href="#" onclick="showPage('scps')">ACP 목록</a></li>
+            <li><a href="#" onclick="showPage('tales')">이야기</a></li>
+            <li><a href="#" onclick="showPage('personnel')">인사 파일</a></li>
+            <li><a href="#" onclick="showPage('guides')">가이드</a></li>
+            <li><a href="#" onclick="showPage('forum')">포럼</a></li>
+        </ul>
+    </nav>
 
-<div class="container">
+    <div class="container">
+        <aside class="sidebar">
+            <h3>빠른 링크</h3>
+            <ul>
+                <li><a href="#" onclick="showPage('acp-001')">▶ ACP-001</a></li>
+                <li><a href="#" onclick="showPage('acp-006')">▶ ACP-006</a></li>
+                <li><a href="#" onclick="showPage('acp-523')">▶ ACP-523</a></li>
+                <li><a href="#" onclick="showPage('acp-200')">▶ ACP-200</a></li>
+            </ul>
 
-<div id="board-page">
-<h3>게시판</h3>
-<form id="post-form" onsubmit="createPost(event)">
-<input id="post-title" type="text" placeholder="제목" style="width:200px;" required>
-<textarea id="post-content" placeholder="내용" rows="2" style="width:60%;" required></textarea>
-<button class="btn" type="submit">글쓰기</button>
-</form>
-<div id="posts-list"></div>
-</div>
+            <h3 style="margin-top: 30px;">등급별 분류</h3>
+            <ul>
+                <li><a href="#">Safe 등급</a></li>
+                <li><a href="#">Euclid 등급</a></li>
+                <li><a href="#">Keter 등급</a></li>
+                <li><a href="#">Thaumiel 등급</a></li>
+            </ul>
 
-<div id="profile-page" class="hidden">
-<h3>프로필</h3>
-<label for="profile-nickname">닉네임 변경</label>
-<input id="profile-nickname" type="text" style="width:200px;">
-<button class="btn" onclick="changeNickname()">변경</button>
-<div id="profile-msg" class="info"></div>
-<div id="profile-err" class="err"></div>
-</div>
-</div>
+            <h3 style="margin-top: 30px;">최근 업데이트</h3>
+            <ul>
+                <li><a href="#">SCP-5000 수정됨</a></li>
+                <li><a href="#">새 이야기 추가됨</a></li>
+                <li><a href="#">격리 위반 보고서</a></li>
+            </ul>
+        </aside>
 
-<button id="change-nick-floating" class="btn" onclick="showSetNick()">닉네임 변경</button>
+        <main class="main-content">
+            <!-- 홈 페이지 -->
+            <div id="home" class="page active">
+                <h2 style="color: #c00; margin-bottom: 20px;">SCP 재단에 오신 것을 환영합니다</h2>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 경고</strong>
+                    <p>본 데이터베이스에 접근하기 위해서는 레벨 2 이상의 보안 인가가 필요합니다. 무단 접근 시도는 즉시 보고되며, 기억 소거 및 해고 절차가 진행될 수 있습니다.</p>
+                </div>
 
-<div id="nick-modal" class="modal-backdrop">
-<div class="modal">
-<h4>닉네임 설정</h4>
-<label for="modal-nick">닉네임 (2~20자)</label>
-<input id="modal-nick" type="text" placeholder="닉네임 입력">
-<div id="modal-err" class="err"></div>
-<div style="margin-top:10px;">
-<button class="btn" onclick="applyNickname()">확인</button>
-<button class="btn" onclick="closeNickModal()" style="margin-left:8px;">취소</button>
-<button class="btn" onclick="genRandomNick()" style="margin-left:8px;">랜덤</button>
-</div>
-<div style="margin-top:8px;color:#999;font-size:0.9em;">로그인 없으므로 로컬 저장됩니다.</div>
-</div>
-</div>
+                <div class="section">
+                    <h3>재단 소개</h3>
+                    <p>
+                        SCP 재단은 인류를 위협하는 변칙 존재, 물체, 현상을 확보하고 격리하며 보호하는 비밀 조직입니다. 
+                        우리는 인류가 정상적이고 안전한 세계에서 살 수 있도록 그림자 속에서 활동합니다.
+                    </p>
+                    <p style="margin-top: 15px;">
+                        현재 재단은 전 세계 <span class="redacted">███</span>개의 기지를 운영하고 있으며, 
+                        <span class="redacted">█████</span>명 이상의 인원이 근무하고 있습니다.
+                    </p>
+                </div>
 
-<script>
-const firebaseConfig={apiKey:"AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",authDomain:"gaysdogam.firebaseapp.com",projectId:"gaysdogam",storageBucket:"gaysdogam.firebasestorage.app",messagingSenderId:"505108692237",appId:"1:505108692237:web:1e7bf3d6f855db7b238444",measurementId:"G-MCNTRDN70C"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
+                <div class="section">
+                    <h3>최신 SCP 항목</h3>
+                    <div class="scp-list">
+                        <div class="scp-card" onclick="showPage('acp-006')">
+                            <h4>ACP-173 - "두꺼비열쇠"</h4>
+                            <p><span class="class-badge euclid">Euclid</span></p>
+                            <p>두꺼비열쇠는 열쇠가 들어간 자물쇠, 혹은 그 외의 것을 전부 두꺼비로 바꾸는 특성이 있습니다.</p>
+                        </div>
+                        <div class="scp-card" onclick="showPage('acp-523')">
+                            <h4>=ACP-523 - "부엉이 동상"</h4>
+                            <p><span class="class-badge keter">Keter</span></p>
+                            <p>대한민국 김해시 진영읍에 있는 동상으로, 다가가면 다가갈수록 중력이 강력해지는 특성을 가지고있습니다.</p>
+                        </div>
+                        <div class="scp-card" onclick="showPage('acp-200')">
+                            <h4>ACP-200 - "드럼통"</h4>
+                            <p><span class="class-badge euclid">Euclid</span></p>
+                            <p>이 드럼통은 가장 가까이 있는 사람에게로 굴러가며, 이 드럼통과 접촉한 사람 혹은 생명체는 모두 드럼통에 갇혀 바다에 빠지게 된다.</p>
+                        </div>
+                    </div>
+                </div>
 
-function escapeHtml(s){return(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function getLocalNick(){return localStorage.getItem('nickname')||'';}
-function setLocalNick(n){localStorage.setItem('nickname',n);}
-function showPage(p){document.getElementById('board-page').classList.add('hidden');document.getElementById('profile-page').classList.add('hidden');document.getElementById(p+'-page').classList.remove('hidden');}
-function showSetNick(){document.getElementById('modal-nick').value=getLocalNick();document.getElementById('modal-err').textContent='';document.getElementById('nick-modal').classList.add('show');}
-function closeNickModal(){document.getElementById('nick-modal').classList.remove('show');if(!getLocalNick())showSetNick();}
-function applyNickname(){const n=(document.getElementById('modal-nick').value||'').trim();const e=document.getElementById('modal-err');e.textContent='';if(!n){e.textContent='입력';return;}if(n.length<2||n.length>20){e.textContent='2~20자';return;}if(/\s/.test(n)){e.textContent='공백 불가';return;}setLocalNick(n);document.getElementById('nick-modal').classList.remove('show');}
-function genRandomNick(){const r='User'+Math.floor(Math.random()*9000+1000);document.getElementById('modal-nick').value=r;}
+                <div class="incident-report">
+                    <h4>최근 탈출 사건</h4>
+                    <p><strong>날짜:</strong> 20██/██/██</p>
+                    <p><strong>대상:</strong> SCP-████</p>
+                    <p><strong>상황:</strong> <span class="redacted">████████████████</span> 현재 상황 종료됨. 민간인 목격자 ██명 기억 소거 완료.</p>
+                </div>
+            </div>
 
-window.onload=()=>{loadPosts();if(!getLocalNick())showSetNick();};
+            <!-- SCP 목록 페이지 -->
+            <div id="scps" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">ACP 개체 목록</h2>
+                
+                <div class="search-box">
+                    <input type="text" placeholder="ACP 번호 또는 이름으로 검색..." id="searchInput" onkeyup="searchSCP()">
+                </div>
 
-function changeNickname(){const n=(document.getElementById('profile-nickname').value||'').trim();const m=document.getElementById('profile-msg');const e=document.getElementById('profile-err');m.textContent='';e.textContent='';if(!n){e.textContent='입력';return;}if(n.length<2||n.length>20){e.textContent='2~20자';return;}if(/\s/.test(n)){e.textContent='공백 불가';return;}setLocalNick(n);m.textContent='완료';}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>이름</th>
+                            <th>등급</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr onclick="showPage('acp-001)">
+                            <td><strong>ACP-001</strong></td>
+                            <td>"독두껍"</td>
+                            <td><span class="class-badge euclid">[접근 거부됨]</span></td>
+                            <td>[접근 거부됨]</td>
+                        </tr>
+                        <tr onclick="showPage('acp-006')">
+                            <td><strong>ACP-006</strong></td>
+                            <td>"두꺼비 열쇠"</td>
+                            <td><span class="class-badge euclid">껍전</span></td>
+                            <td>두꺼비열쇠는 열쇠가 들어간 자물쇠, 혹은 그 외의 것을 전부 두꺼비로 바꾸는 특성이 있습니다.</td>
+                        </tr>
+                        <tr onclick="showPage('acp-523')">
+                            <td><strong>ACP - 523</strong></td>
+                            <td>"부엉이 동상"</td>
+                            <td><span class="class-badge keter">껍테르</span></td>
+                            <td>대한민국 김해시 진영읍에 있는 동상으로, 다가가면 다가갈수록 중력이 강력해지는 특성을 가지고있습니다</td>
+                        </tr>
+                        <tr onclick="showPage('acp-200')">
+                            <td><strong>ACP-200</strong></td>
+                            <td>"드럼통"</td>
+                            <td><span class="class-badge euclid">껍테르</span></td>
+                            <td>이 드럼통은 가장 가까이 있는 사람에게로 굴러가며, 이 드럼통과 접촉한 사람 혹은 생명체는 모두 드럼통에 갇혀 바다에 빠지게 된다.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ACP-999</strong></td>
+                            <td>"껍껍벽돌"</td>
+                            <td><span class="class-badge safe">껍클리드</span></td>
+                            <td>이 벽돌은 절대 깨지지 않는다, 만약 이 벽돌을 깨려고 시도할시, 어떠한 방법으로든 20일 안에 사망한다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-async function createPost(ev){ev.preventDefault();const t=(document.getElementById('post-title').value||'').trim();const c=(document.getElementById('post-content').value||'').trim();const n=getLocalNick();if(!n){alert('닉네임 설정');showSetNick();return;}if(!t||!c)return;await db.collection('posts').add({title:t,content:c,nickname:n,created:Date.now(),likes:[],comments:0});document.getElementById('post-title').value='';document.getElementById('post-content').value='';loadPosts();}
+            <!-- SCP-173 상세 페이지 -->
+            <div id="acp-006" class="page">
+                <div class="classification-box">
+                    <h2>ACP-006</h2>
+                    <div class="class-grid">
+                        <div class="label">객체 등급:</div>
+                        <div class="value"><span class="class-badge euclid">껍클리드</span></div>
+                        
+                        <div class="label">별칭:</div>
+                        <div class="value">두꺼비열쇠</div>
+                    </div>
+                </div>
 
-function loadPosts(){const box=document.getElementById('posts-list');box.innerHTML='<i>불러오는 중...</i>';db.collection('posts').orderBy('created','desc').limit(50).get().then(s=>{box.innerHTML='';if(s.empty){box.innerHTML='<i>없음</i>';return;}s.forEach(d=>{const p=d.data();box.innerHTML+=`<div class="board-post"><div class="title">${escapeHtml(p.title)} <span style="font-size:0.8em;color:#aaa;">by ${escapeHtml(p.nickname||'익명')}</span></div><div>${escapeHtml(p.content)}</div></div>`;});}).catch(console.error);
-}
-</script>
+                <div class="warning-box">
+                    <strong>주의:</strong>두꺼비 열쇠의 격리실에 들어갈때엔 꼭 열쇠를 200개 이상 들고가시오, 혹시나 두꺼비의 열쇠가 당신의 열쇠인척 할수 있습니다.
+                </div>
 
+                <div class="section">
+                    <h3>특수 껍리 절차</h3>
+                    <p>
+                        ACP-006은 항상 잠긴 용기에 보관되어야 합니다. 인원이 ACP-006의 용기에 들어가야 할 때에는, 
+                        최소한 두 명이 들어가야 하며, 문이 다시 닫힐 때까지는 그 중 한 명이 항상 ACP-006을 보고 있어야 합니다. 
+                    </p>
+                    <p style="margin-top: 10px;">
+                        용기에서 작업하는 동안 ACP-006에게서 눈을 떼어서는 안 됩니다. 이는 용기 안에 들어간 인원의 열쇠로 둔갑 할 때를 대비하기 위한 것입니다.
+                    </p>
+                </div>
+
+                <div class="image-container">
+                    [이미지: ACP-006 격리 사진]<br>
+                    [레벨 2 보안 인가 필요]
+                </div>
+
+                <div class="section">
+                    <h3>설명</h3>
+                    <p>
+                        ACP-006은 콘크리트와 Krylon 브랜드 스프레이 페인트로 만들어진 가짜 열쇠입니다. 
+                        대상은 생명이 있으며, 모든것을 두꺼비로 만드려 합니다. 대상은 시야 내에 있고 직접 관찰되는 동안에는 움직이지 않습니다.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        시야에서 벗어나면 ACP - 006은 어떻게해서든 당신의 열쇠가 되려 노력할것입니다, 그러니 조심하세요. 당신의 문도 두꺼비가 될수 있습니다.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        ACP-006은 금색의 <span class="redacted">████</span> 물질을 남기며, 이는 
+                        격리실 바닥에서 발견됩니다. 이 물질의 기원은 불명이나 페인트가 녹은 상태로 추측됩니다..
+                    </p>
+                </div>
+
+                <div class="addendum">
+                    <div class="addendum-title">부록 006-A: 발견 기록</div>
+                    <p>
+                        ACP-006은 19██년 ████████에서 [데이터 말소]되었습니다. 현장에서 <span class="redacted">██</span>마리의 
+                        두꺼비가 발견되었으며, 모두 문고리가 달려있었습니다. 재단 인원이 도착했을 때 ACP-006은 
+                        <span class="redacted">████████</span> 상태로 발견되었습니다.
+                    </p>
+                </div>
+
+                <div class="addendum">
+                    <div class="addendum-title">부록 006-B: 사건 기록</div>
+                    <div class="experiment-log">
+                        <p><strong>사건 006-██:</strong></p>
+                        <p><strong>날짜:</strong> 20██/██/██</p>
+                        <p>
+                           [데이터 말소]
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCP-682 페이지 -->
+            <div id="acp-523" class="page">
+                <div class="classification-box">
+                    <h2>ACP-523</h2>
+                    <div class="class-grid">
+                        <div class="label">객체 등급:</div>
+                        <div class="value"><span class="class-badge keter">껍테르</span></div>
+                        
+                        <div class="label">별칭:</div>
+                        <div class="value">부엉이 동상</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>극도 위험:</strong> ACP-523는 재단에서 가장 위험한 개체 중 하나입니다. 절대 직접 접촉하지 마십시오.
+                </div>
+
+                <div class="section">
+                    <h3>특수 격리 절차</h3>
+                    <p>
+                        ACP-523는 20m x 5m x 5m 크기의 격리실에 보관되어야 합니다. 
+                        대상이 탈출을 시도하거나 격리 위반의 징후를 보일 경우, 모든 보안 요원과 두껍특무부대가 즉시 대응해야 합니다.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        ACP-523를 제거하기 위한 모든 시도는 <span class="redacted">O껍 평의회</span>의 승인을 받아야 합니다.
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h3>설명</h3>
+                    <p>
+                        ACP-523는 거대한 파충류 형태의 생명체로, 길이 약 <span class="redacted">█</span>미터에 
+                        무게는 <span class="redacted">███</span>톤에 달합니다. 대상은 모든 인간을 죽이려 하며, 특히 일베인들을 죽이려합니다.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        ACP-523는 놀라운 재생 능력을 가지고 있습니다. 동상상의 87%가 파괴된 후에도 완전히 회복했으며, 
+                        다양한 환경과 공격 방법에 적응하는 능력을 보였습니다. 대상은 화염, 산, 총기, 폭발물, 
+                        다른 ACP 개체 등 모든 제거 시도에서 생존했습니다.
+                    </p>
+                </div>
+
+                <div class="addendum">
+                    <div class="addendum-title">부록 523-B: 제거 시도 로그</div>
+                    <div class="experiment-log">
+                        <p><strong>시도 523-E1:</strong> 대상을 1500°C의 화염에 노출</p>
+                        <p><strong>결과:</strong> 실패. 확인 결과 동상에 단열제가 생김.</p>
+                    </div>
+                    <div class="experiment-log">
+                        <p><strong>시도 523-E5:</strong> [데이터 말소] 과 대면</p>
+                        <p><strong>결과:</strong> <span class="redacted">████████████</span>. 양 개체 모두 생존</p>
+                    </div>
+                    <div class="experiment-log">
+                        <p><strong>시도 523-E18:</strong> 핵무기 사용</p>
+                        <p><strong>결과:</strong> 대상의 약 68%가 기화됨. 3시간 후 완전 재생. O 평의회가 추가 핵무기 사용을 불허함</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCP-096 페이지 -->
+            <div id="acp-200" class="page">
+                <div class="classification-box">
+                    <h2>ACP-200</h2>
+                    <div class="class-grid">
+                        <div class="label">객체 등급:</div>
+                        <div class="value"><span class="class-badge euclid">껍클리드</span></div>
+                        
+                        <div class="label">별칭:</div>
+                        <div class="value">"드럼통"</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong> 경고:</strong> ACP-200과의 어떤식으로든의 접근을 불허합니다.
+                </div>
+
+                <div class="section">
+                    <h3>특수 격리 절차</h3>
+                    <p>
+                        SCP-096은 5m x 5m x 5m 격리실에 보관되어야 합니다. 주 1회 큐브는 점검되어야 하며, 
+                        어떠한 경우에도 ACP-200을 만져선 안됩니다. ACP-200을 만진 직원은 
+                        즉시 <span class="redacted">프로토콜 4000-Eshu</span>를 실행해야 합니다.
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h3>설명</h3>
+                    <p>
+                        ACP-200의 드럼통은 어떤식으로든 가장 가까이 있는 사람을 추격합니다, 닿는 순간 그 사람은 드럼통에 들어가게되고, 10분 후 수장됩니다.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        만약 만졌다면.. 명복을 빌죠.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        마지막 사람을 죽인지 2일 15시간 38초, 다음 표적을 향해 달리기 시작합니다. 
+                        이동 속도는 <span class="redacted">███</span> km/h에 달하며, 어떠한 장애물도 
+                        ACP-200을 막을 수 없는 것으로 확인되었습니다.
+                    </p>
+                </div>
+
+                <div class="incident-report">
+                    <h4></h4>사건 200-1-A</h4>
+                    <p>
+                        20██년, 등산을 하고있던 A씨는 어딘가에서 굴러온 드럼통에 들어가 사망했습니다.
+                        확인 결과 ACP-200은 <span class="redacted">████</span> km를 이동하여 대상을 찾아냈으며, 
+                       현재까지 <span class="redacted">██</span>명의 희생자가 발생했습니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- SCP-002 페이지 -->
+            <div id="scp-002" class="page">
+                <div class="classification-box">
+                    <h2>SCP-001</h2>
+                    <div class="class-grid">
+                        <div class="label">객체 등급:</div>
+                        <div class="value"><span class="class-badge euclid">[접근 거부됨]</span></div>
+                        
+                        <div class="label">별칭:</div>
+                        <div class="value">[접근 거부됨]</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>특수 격리 절차</h3>
+                    <p>
+                        [접근 거부됨]
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h3>설명</h3>
+                    <p>
+                    [접근 거부됨]
+                    </p>
+                    <p style="margin-top: 10px;">
+                        [접근 거부됨]
+                    </p>
+                </div>
+            </div>
+
+            <!-- 이야기 페이지 -->
+            <div id="tales" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">재단 이야기</h2>
+                
+                <div class="scp-card">
+                    <h4>Site-19 본 썰</h4>
+                    <p style="margin-top: 10px;">
+                        "그날 밤, 모든 것이 잘못되기 시작했습니다. 경보가 울렸고, 우리는 
+                        <span class="redacted">SCP-███</span>이 격리를 벗어났다는 것을 알았습니다..."
+                    </p>
+                    <p style="margin-top: 10px; color: #666; font-size: 0.9em;">작성자: Dr. ████ </p>
+                </div>
+
+                <div class="scp-card">
+                    <h4>ACP-006</h4>
+                    <p style="margin-top: 10px;">
+                        "아니, 생각해보면 ACP-006을 가지고 두꺼비를 양산해서 신기한 동물로 팔면 돈 잘벌릴거같지 않아?"
+                    </p>
+                    <p style="margin-top: 10px; color: #666; font-size: 0.9em;">작성자: Agent ████ </p>
+                </div>
+            </div>
+
+            <!-- 인사 파일 페이지 -->
+            <div id="personnel" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">재단 인사 파일</h2>
+
+                <div class="personnel-card">
+                    <h4>Dr. ████████</h4>
+                    <p><span class="clearance-level">레벨 4</span></p>
+                    <p><strong>직위:</strong> Site-19 연구 책임자</p>
+                    <p><strong>전문 분야:</strong> 껍테르급 개체 격리</p>
+                    <p><strong>주요 프로젝트:</strong> ACP-523 제거 프로젝트 총괄</p>
+                </div>
+
+                <div class="personnel-card">
+                    <h4>Agent █████</h4>
+                    <p><span class="clearance-level">레벨 3</span></p>
+                    <p><strong>직위:</strong> 기동특무부대 감마-5 팀장</p>
+                    <p><strong>전문 분야:</strong> 격리 위반 대응, 기억 소거 작전</p>
+                    <p><strong>특이 사항:</strong> ACP-200 격리 위반 사건에서 생존</p>
+                </div>
+
+                <div class="personnel-card">
+                    <h4>Dr. Bright</h4>
+                    <p><span class="clearance-level">레벨 4</span></p>
+                    <p><strong>직위:</strong> Site Director (여러 Site)</p>
+                    <p><strong>전문 분야:</strong> ACP-006 관련 연구</p>
+                    <p><strong>특이 사항:</strong> <span class="redacted">████████████</span></p>
+                </div>
+            </div>
+
+            <!-- 가이드 페이지 -->
+            <div id="guides" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">재단 가이드</h2>
+
+                <div class="section">
+                    <h3>보안 등급 체계</h3>
+                    <p>재단의 보안 인가는 다음과 같이 분류됩니다:</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <p><strong>레벨 0:</strong> 기밀 정보에 대한 접근이 필요하지 않은 인원</p>
+                        <p><strong>레벨 1:</strong> 기지 내 비기밀 정보에 접근 가능</p>
+                        <p><strong>레벨 2:</strong> 껍전급 및 일부 껍클리드급 SCP에 접근 가능</p>
+                        <p><strong>레벨 3:</strong> 대부분의 SCP 정보에 접근 가능</p>
+                        <p><strong>레벨 4:</strong> Site Director급, 최고 기밀 정보 접근 가능</p>
+                        <p><strong>레벨 5:</strong> O껍 평의회, 재단의 모든 정보에 접근 가능</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>객체 등급</h3>
+                    <p><span class="class-badge safe">껍전</span> - 격리가 쉽고 예측 가능한 개체</p>
+                    <p style="margin-top: 10px;"><span class="class-badge euclid">껍클리드</span> - 격리가 어렵거나 예측 불가능한 개체</p>
+                    <p style="margin-top: 10px;"><span class="class-badge keter">껍테르</span> - 격리가 매우 어렵고 인류에 극도로 위협적인 개체</p>
+                    <p style="margin-top: 10px;"><span class="class-badge thaumiel">껍우미엘</span> - 최고 기밀, 다른 SCP 격리에 사용되는 개체</p>
+                </div>
+
+                <div class="section">
+                    <h3>두껍특무부대</h3>
+                    <p>
+                        두껍특무부대(Mobile Task Force, MTF)는 재단의 특수 작전 부대입니다. 
+                        각 부대는 특정 유형의 위협이나 상황에 대응하도록 훈련되었습니다.
+                    </p>
+                    <ul style="margin: 15px 0 0 30px;">
+                        <li>Epsilon-11 ("frog") - 격리 위반 대응</li>
+                        <li>Alpha-1 ("Red Right Hand") - O껍 평의회 직속 부대</li>
+                        <li>Nu-7 ("Hammer Down") - 대규모 위협 제거</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 포럼 페이지 -->
+            <div id="forum" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">재단 포럼</h2>
+
+                <div class="scp-card">
+                    <h4>💬 ACP-523 제거 가능성 논의</h4>
+                    <p style="color: #666; font-size: 0.9em;">Dr. ████ </p>
+                    <p style="margin-top: 10px;">
+                        최근 실험 결과를 바탕으로 새로운 제거 방법 이거 어떰
+                    </p>
+                </div>
+
+                <div class="scp-card">
+                    <h4>💬 새로운 기억 소거 프로토콜</h4>
+                    <p style="color: #666; font-size: 0.9em;">Agent ████ </p>
+                    <p style="margin-top: 10px;">
+                        기억 소거제의 부작용을 최소화하는 새로운 방법을 발견함
+                    </p>
+                </div>
+
+                <div class="scp-card">
+                    <h4>💬 Site-19 식당 음식에 대한 불만</h4>
+                    <p style="color: #666; font-size: 0.9em;">Junior Researcher █████ </p>
+                    <p style="margin-top: 10px;">
+                        껍테르급 개체보다 더 위험한 것이 있다면 그것은 우리 식당 음식이다...
+                    </p>
+                </div>
+            </div>
+
+            <!-- 로그인 페이지 -->
+            <div id="login" class="page">
+                <div class="login-box">
+                    <h3>재단 보안 로그인</h3>
+                    <input type="text" placeholder="직원 ID" id="username">
+                    <input type="password" placeholder="비밀번호" id="password">
+                    <input type="text" placeholder="보안 토큰" id="token">
+                    <button onclick="login()">로그인</button>
+                    <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+                        무단 접근 시도는 추적되며 즉시 보고됩니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 설정 페이지 -->
+            <div id="settings" class="page">
+                <h2 style="color: #c00; margin-bottom: 20px;">설정</h2>
+                
+                <div class="section">
+                    <h3>표시 설정</h3>
+                    <p><input type="checkbox" id="darkMode"> 다크 모드</p>
+                    <p><input type="checkbox" id="showRedacted" checked> 검열 텍스트 표시</p>
+                </div>
+
+                <div class="section">
+                    <h3>알림 설정</h3>
+                    <p><input type="checkbox" id="breachAlert" checked> 격리 위반 알림</p>
+                    <p><input type="checkbox" id="updateAlert" checked> 문서 업데이트 알림</p>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <h3>공지사항</h3>
+            <ul style="list-style: none;">
+                <li style="color: #c00; margin-bottom: 15px;">
+                    Site-██에서 격리 위반 발생
+                </li>
+                <li style="margin-bottom: 10px;">
+                     새로운 보안 프로토콜 시행
+                </li>
+                <li style="margin-bottom: 10px;">
+                     월간 연구 보고서 제출 마감: D-3
+                </li>
+            </ul>
+
+            <h3 style="margin-top: 30px;">통계</h3>
+            <ul style="list-style: none;">
+                <li>등록된 SCP: <span class="redacted">████</span></li>
+                <li>활성 기지: <span class="redacted">███</span></li>
+                <li>현역 인원: <span class="redacted">█████</span></li>
+                <li>금일 격리 위반: 2건</li>
+            </ul>
+
+
+    <footer class="footer">
+        <p>SCP 재단 - 인류를 위해 그림자 속에서</p>
+        <p style="margin-top: 10px;">
+            <a href="#">이용 약관</a> | 
+            <a href="#">개인정보 처리방침</a> | 
+            <a href="#">문의하기</a>
+        </p>
+        <p style="margin-top: 15px; font-size: 0.9em;">
+            © 20██ ACP 재단. 모든 권리 보유.<br>
+            무단 복제 및 배포 금지.
+        </p>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            // 모든 페이지 숨기기
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // 선택된 페이지 표시
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+            }
+            
+            // 네비게이션 활성화 업데이트
+            const navLinks = document.querySelectorAll('.nav a');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // 스크롤을 맨 위로
+            window.scrollTo(0, 0);
+        }
+
+        function searchSCP() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.querySelector('table tbody');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                rows[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const token = document.getElementById('token').value;
+            
+            if (username && password && token) {
+                document.getElementById('userStatus').textContent = username;
+                alert('로그인 성공! 보안 인가 확인됨.');
+                showPage('home');
+            } else {
+                alert('모든 필드를 입력해주세요.');
+            }
+        }
+
+        // 검열 텍스트 클릭 시 힌트 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            const redacted = document.querySelectorAll('.redacted');
+            redacted.forEach(el => {
+                el.addEventListener('click', function() {
+                    if (this.style.backgroundColor === 'rgb(51, 51, 51)') {
+                        this.style.backgroundColor = '#000';
+                        this.style.color = '#000';
+                    } else {
+                        this.style.backgroundColor = '#333';
+                        this.style.color = '#fff';
+                    }
+                });
+            });
+        });
+
+        // 페이지 로드 시 경고 메시지
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                console.log(' SCP 재단 보안 시스템 활성화됨');
+                console.log('모든 활동은 기록됩니다.');
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
