@@ -1,333 +1,301 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>게이들 도감</title>
-<style>
-  :root { --bg:#0f172a; --card:#0b1220; --muted:#94a3b8; --accent:#06b6d4; --ok:#10b981; --danger:#ef4444; --glass: rgba(255,255,255,0.03); }
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic";background:linear-gradient(180deg,#071024,#041026);color:#e6eef6}
-  .container{max-width:1100px;margin:28px auto;padding:18px}
-  h1{margin:0 0 12px;font-size:20px}
-  .layout{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
-  @media (max-width: 900px) {
-    .layout { display:block; }
-  }
-  .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-  label{display:block;margin:10px 0 6px;color:var(--muted);font-size:13px}
-  input[type=text], textarea, select {width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-  textarea{min-height:90px;resize:vertical}
-  button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#021124;font-weight:700;cursor:pointer}
-  .muted{color:var(--muted);font-size:13px}
-  .small{font-size:13px}
-  .preview{border-radius:8px;overflow:hidden;background:var(--glass);padding:8px}
-  .entry-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
-  .entry{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:10px;border-radius:10px;position:relative;}
-  .entry img{width:100%;height:140px;object-fit:cover;border-radius:6px}
-  .tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-  .tag{background:rgba(255,255,255,0.04);padding:4px 8px;border-radius:6px;font-size:12px;color:var(--muted)}
-  .meta{margin-top:8px;color:var(--muted);font-size:13px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .small-muted{font-size:12px;color:var(--muted)}
-  .search{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  .search input{flex:1}
-  .like-btn{background:var(--glass);color:var(--accent);border:1px solid var(--accent);margin-right:8px;padding:4px 10px;border-radius:16px;font-size:13px;transition:background .15s;}
-  .like-btn.liked{background:var(--accent);color:#fff;border:1px solid var(--accent);}
-  .comments-section{margin-top:12px;background:rgba(255,255,255,0.02);padding:10px 8px 8px 8px;border-radius:8px;}
-  .comment-item{margin-bottom:8px;font-size:13px;}
-  .comment-meta{color:var(--muted);font-size:12px;}
-  .comment-form{display:flex;gap:6px;margin-top:6px;}
-  .comment-form input{flex:1;}
-  footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
-  .btn-ghost { background: none; color: var(--muted); border: 1px solid rgba(255,255,255,0.15); font-weight: normal; transition: background 0.2s; }
-  .btn-ghost:hover { background: var(--glass); color: var(--accent);}
-  .btn-ghost:disabled { opacity: 0.6; cursor: not-allowed; }
-</style>
-<!-- Firebase JS SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <meta charset="UTF-8">
+  <title>ACP 재단 - Azoral Contail Porn Foundation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { background: #222; color: #eee; font-family: 'Malgun Gothic', Arial, sans-serif; margin:0; }
+    header { background:#111; padding:24px 0 10px; text-align:center; border-bottom:4px solid #f44;}
+    header h1{ margin:0; font-size:2.3em; }
+    header h2{ margin:11px 0 0 0; color:#f44; font-size:1.1em;}
+    .container { max-width:900px; margin:30px auto; padding:24px; background:#292929; border-radius:8px; }
+    .hidden { display:none; }
+    nav { background:#191919; padding:7px 0; text-align:center; border-bottom:2px solid #444; }
+    nav button { background:none; border:none; color:#f44; margin:0 10px; font-size:1.1em; cursor:pointer; }
+    .board-post, .comment { background:#181818; margin:18px 0; padding:14px 12px; border-left:5px solid #f44; border-radius:6px; }
+    .board-post .title { font-size:1.18em; color:#fff; margin-bottom:7px;}
+    .like-btn { cursor:pointer; color:#f44; background: none; border: none; font-size:1.1em;}
+    .like-btn.liked { color:#ffd700; }
+    .comment { margin-left: 30px; border-left: 3px solid #4af; }
+    .profile-box { margin:20px 0; padding:15px; background:#181818; border-radius:8px;}
+    input, textarea { background:#222; color:#eee; border:1px solid #444; border-radius:4px; padding:6px 8px; margin-bottom:8px;}
+    .login-box, .signup-box { margin:30px auto 0 auto; max-width:350px; background:#191919; padding:20px 22px; border-radius:10px;}
+    .btn { background:#f44; color:#fff; border:none; padding:7px 15px; border-radius:5px; cursor:pointer;}
+    .btn:disabled { background:#555; }
+    .err { color:#f44; margin:7px 0;}
+  </style>
 </head>
 <body>
-<div class="container">
-  <header class="card" style="margin-bottom:12px">
-    <h1>게이 도감</h1>
-    <div class="muted small">게이를 등록할 수 있는 사이트</div>
+  <header>
+    <h1>ACP 재단</h1>
+    <h2>Azoral Contail Porn Foundation</h2>
   </header>
-  <div class="layout">
-    <!-- 왼쪽: 도감 항목 -->
-    <div>
-      <div class="card" style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h2>도감 항목</h2>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="small-muted">총 항목: <span id="entriesCount">0</span></div>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div class="search">
-          <input id="searchInput" type="text" placeholder="검색 (이름/태그)" />
-          <button id="clearFilter" class="btn-ghost" type="button">초기화</button>
-        </div>
-        <div id="entries" class="entry-list"></div>
+  <nav id="navbar" class="hidden">
+    <button onclick="showPage('board')">게시판</button>
+    <button onclick="showPage('profile')">프로필</button>
+    <button onclick="firebase.auth().signOut()">로그아웃</button>
+  </nav>
+  <div class="container">
+    <!-- 로그인/회원가입 -->
+    <div id="login-page" class="login-box">
+      <h3>로그인</h3>
+      <div>
+        <input id="login-email" type="email" placeholder="이메일"><br>
+        <input id="login-password" type="password" placeholder="비밀번호"><br>
+        <button class="btn" onclick="login()">로그인</button>
+        <button class="btn" onclick="showSignup()">회원가입</button>
       </div>
+      <div id="login-error" class="err"></div>
     </div>
-    <!-- 오른쪽: 새 게이 만들기 -->
-    <div>
-      <div class="card" id="submitCard">
-        <h2>새 게이 만들기</h2>
-        <label for="title">이름</label>
-        <input id="title" type="text" placeholder="항목 이름" />
-        <label for="desc">설명</label>
-        <textarea id="desc" placeholder="항목 설명 (간단히)"></textarea>
-        <label>속성 추가 (키:값)</label>
-        <div style="display:flex;gap:8px">
-          <input id="statKey" type="text" placeholder="키 (예: 게이력)" />
-          <input id="statVal" type="text" placeholder="값 (예: 50)" />
-          <button id="addStatBtn" type="button">추가</button>
-        </div>
-        <div id="statsContainer" class="small-muted" style="margin-top:8px"></div>
-        <label for="tags">태그 (쉼표로 구분)</label>
-        <input id="tags" type="text" placeholder="예: 어패류,류광원" />
-        <label for="img">이미지 (선택)</label>
-        <input id="img" type="file" accept="image/*" />
-        <div class="preview" style="margin-top:8px">
-          <div class="muted small">미리보기</div>
-          <img id="imgPreview" src="" alt="" style="width:100%;height:200px;object-fit:contain;border-radius:8px;display:none;margin-top:8px" />
-        </div>
-        <div class="controls">
-          <button id="submitBtn" type="button">제출</button>
-          <button id="clearForm" class="btn-ghost" type="button">초기화</button>
-          <div class="small-muted">gay.</div>
-        </div>
-        <div id="submitMsg" class="small-muted" style="margin-top:10px"></div>
+    <div id="signup-page" class="signup-box hidden">
+      <h3>회원가입</h3>
+      <div>
+        <input id="signup-email" type="email" placeholder="이메일"><br>
+        <input id="signup-password" type="password" placeholder="비밀번호"><br>
+        <input id="signup-nickname" type="text" placeholder="닉네임"><br>
+        <button class="btn" onclick="signup()">가입하기</button>
+        <button class="btn" onclick="showLogin()">뒤로가기</button>
       </div>
+      <div id="signup-error" class="err"></div>
+    </div>
+    <!-- 게시판 -->
+    <div id="board-page" class="hidden">
+      <h3>게시판</h3>
+      <form id="post-form" onsubmit="createPost(event)" style="margin-bottom:18px;">
+        <input id="post-title" type="text" placeholder="제목" required style="width:200px;">
+        <textarea id="post-content" placeholder="내용" required rows="2" style="width:60%;"></textarea>
+        <button class="btn" type="submit">글쓰기</button>
+      </form>
+      <div id="posts-list"></div>
+    </div>
+    <!-- 프로필 -->
+    <div id="profile-page" class="profile-box hidden">
+      <h3>프로필</h3>
+      <div>
+        <b>이메일:</b> <span id="profile-email"></span><br>
+        <b>닉네임:</b> <input id="profile-nickname" type="text" style="width:140px;">
+        <button class="btn" onclick="updateProfile()">수정</button><br>
+        <b>자기소개:</b><br>
+        <textarea id="profile-bio" rows="2" style="width:70%;"></textarea>
+        <button class="btn" onclick="updateProfile()">수정</button>
+      </div>
+      <div id="profile-update-msg" style="color:#4af;"></div>
     </div>
   </div>
-  <footer>
-    gay.
-  </footer>
-</div>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",
-  authDomain: "gaysdogam.firebaseapp.com",
-  projectId: "gaysdogam",
-  storageBucket: "gaysdogam.firebasestorage.app",
-  messagingSenderId: "505108692237",
-  appId: "1:505108692237:web:1e7bf3d6f855db7b238444",
-  measurementId: "G-MCNTRDN70C"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  <!-- Firebase 및 기능 스크립트 -->
+  <script>
+    // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",
+      authDomain: "gaysdogam.firebaseapp.com",
+      projectId: "gaysdogam",
+      storageBucket: "gaysdogam.firebasestorage.app",
+      messagingSenderId: "505108692237",
+      appId: "1:505108692237:web:1e7bf3d6f855db7b238444",
+      measurementId: "G-MCNTRDN70C"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-const MAX_TITLE = 80;
-const MAX_DESC = 2000;
-let currentStats = {};
-let cachedEntries = [];
+    // 페이지 전환
+    function showPage(page) {
+      document.getElementById('board-page').classList.add('hidden');
+      document.getElementById('profile-page').classList.add('hidden');
+      if(page==='board') loadPosts();
+      if(page==='profile') loadProfile();
+      document.getElementById(page+'-page').classList.remove('hidden');
+    }
+    function showSignup() {
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('signup-page').classList.remove('hidden');
+    }
+    function showLogin() {
+      document.getElementById('signup-page').classList.add('hidden');
+      document.getElementById('login-page').classList.remove('hidden');
+    }
 
-const titleEl = document.getElementById('title');
-const descEl = document.getElementById('desc');
-const statKeyEl = document.getElementById('statKey');
-const statValEl = document.getElementById('statVal');
-const addStatBtn = document.getElementById('addStatBtn');
-const statsContainer = document.getElementById('statsContainer');
-const tagsEl = document.getElementById('tags');
-const imgInput = document.getElementById('img');
-const imgPreview = document.getElementById('imgPreview');
-const submitBtn = document.getElementById('submitBtn');
-const clearFormBtn = document.getElementById('clearForm');
-const submitMsg = document.getElementById('submitMsg');
-const entriesContainer = document.getElementById('entries');
-const entriesCount = document.getElementById('entriesCount');
-const searchInput = document.getElementById('searchInput');
-const clearFilter = document.getElementById('clearFilter');
+    // 로그인/회원가입 로직
+    function login() {
+      const email = document.getElementById('login-email').value;
+      const pw = document.getElementById('login-password').value;
+      document.getElementById('login-error').textContent = '';
+      firebase.auth().signInWithEmailAndPassword(email, pw)
+        .catch(e=>{document.getElementById('login-error').textContent=e.message;});
+    }
+    function signup() {
+      const email = document.getElementById('signup-email').value;
+      const pw = document.getElementById('signup-password').value;
+      const nick = document.getElementById('signup-nickname').value;
+      document.getElementById('signup-error').textContent = '';
+      firebase.auth().createUserWithEmailAndPassword(email, pw)
+        .then(user=>{
+          return db.collection('users').doc(user.user.uid).set({ nickname:nick, bio:'', email:email });
+        })
+        .then(()=>{ showLogin(); alert('회원가입 완료! 로그인해주세요.'); })
+        .catch(e=>{document.getElementById('signup-error').textContent=e.message;});
+    }
 
-/* 이미지 미리보기 */
-imgInput.addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) { imgPreview.style.display='none'; imgPreview.src=''; return; }
-  const reader = new FileReader();
-  reader.onload = () => { imgPreview.src = reader.result; imgPreview.style.display='block'; };
-  reader.readAsDataURL(f);
-});
-
-/* 속성 추가 */
-addStatBtn.addEventListener('click', () => {
-  const k = (statKeyEl.value || '').trim();
-  const v = (statValEl.value || '').trim();
-  if (!k) return alert('키를 입력하세요.');
-  currentStats[k] = v;
-  renderStats();
-  statKeyEl.value = ''; statValEl.value = '';
-});
-function renderStats(){
-  const ks = Object.keys(currentStats);
-  if (!ks.length) { statsContainer.textContent='속성 없음'; return; }
-  statsContainer.innerHTML = ks.map(k => `<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><strong style="width:100px">${k}</strong><div class="small-muted">${currentStats[k]}</div><button class="btn-ghost" data-rem="${k}" type="button" style="margin-left:auto">삭제</button></div>`).join('');
-  Array.from(statsContainer.querySelectorAll('[data-rem]')).forEach(btn => btn.onclick = () => { delete currentStats[btn.dataset.rem]; renderStats(); });
-}
-
-/* 폼 초기화 */
-clearFormBtn.addEventListener('click', clearFormData);
-function clearFormData(){ titleEl.value=''; descEl.value=''; tagsEl.value=''; imgInput.value=''; imgPreview.src=''; imgPreview.style.display='none'; currentStats={}; renderStats(); }
-
-/* 제출 처리 (Firestore에 저장) */
-submitBtn.addEventListener('click', async () => {
-  if (submitBtn.disabled) return;
-  submitBtn.disabled = true;
-  submitMsg.textContent = '';
-
-  const title = (titleEl.value||'').trim();
-  const desc = (descEl.value||'').trim();
-  const tags = (tagsEl.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  if (!title) { alert('이름을 입력하십시오.'); submitBtn.disabled = false; return; }
-  if (title.length > MAX_TITLE) { alert('이름이 너무 깁니다.'); submitBtn.disabled = false; return; }
-  if (desc.length > MAX_DESC) { alert('설명이 너무 깁니다.'); submitBtn.disabled = false; return; }
-
-  let imageData = '';
-  if (imgInput.files && imgInput.files[0]) {
-    imageData = await new Promise(res => {
-      const fr = new FileReader();
-      fr.onload = () => res(fr.result);
-      fr.readAsDataURL(imgInput.files[0]);
+    // 인증 상태 변경 감지
+    firebase.auth().onAuthStateChanged(user=>{
+      if(user){
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('signup-page').classList.add('hidden');
+        document.getElementById('navbar').classList.remove('hidden');
+        showPage('board');
+      }else{
+        document.getElementById('navbar').classList.add('hidden');
+        document.getElementById('board-page').classList.add('hidden');
+        document.getElementById('profile-page').classList.add('hidden');
+        document.getElementById('login-page').classList.remove('hidden');
+      }
     });
-  }
 
-  const entry = { title, desc, tags, stats: {...currentStats}, imageDataURL: imageData, approvedAt: Date.now(), likes: 0 };
-  try {
-    await db.collection('catalog_entries').add(entry);
-    submitMsg.textContent = '제출 완료 — 공개됨';
-    clearFormData();
-    await fetchEntries();
-  } catch(e) {
-    alert('저장 실패: ' + e.message);
-  }
-  submitBtn.disabled = false;
-});
-
-/* Firestore에서 데이터 불러오기 */
-async function fetchEntries(){
-  const snapshot = await db.collection('catalog_entries').orderBy('approvedAt', 'desc').get();
-  cachedEntries = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-  renderEntries();
-}
-
-/* 좋아요(Like) 기능: LocalStorage로 1회 제한 */
-function isLiked(entryId) {
-  try {
-    const liked = JSON.parse(localStorage.getItem("catalog_likes")||"{}");
-    return !!liked[entryId];
-  } catch { return false; }
-}
-function setLiked(entryId) {
-  let liked = {};
-  try { liked = JSON.parse(localStorage.getItem("catalog_likes")||"{}"); } catch {}
-  liked[entryId] = 1;
-  localStorage.setItem("catalog_likes", JSON.stringify(liked));
-}
-
-/* 댓글 렌더링 */
-async function renderComments(entryId, container) {
-  container.innerHTML = `<div class="small-muted">불러오는 중...</div>`;
-  const snap = await db.collection('catalog_entries').doc(entryId).collection('comments').orderBy('createdAt', 'asc').get();
-  const list = snap.docs.map(doc => doc.data());
-  if(list.length === 0) {
-    container.innerHTML = '<div class="small-muted">아직 댓글이 없습니다.</div>';
-  } else {
-    container.innerHTML = list.map(c =>
-      `<div class="comment-item">
-        <div>${escapeHtml(c.text)}</div>
-        <div class="comment-meta">${escapeHtml(c.author||"익명")} · ${timeAgo(c.createdAt)}</div>
-      </div>`
-    ).join('');
-  }
-}
-
-/* 도감 항목 및 댓글/좋아요 UI */
-function renderEntries() {
-  entriesContainer.innerHTML='';
-  const q = (searchInput.value||'').trim().toLowerCase();
-  let items = cachedEntries.slice();
-  if (q) items = items.filter(it => (it.title||'').toLowerCase().includes(q) || (it.tags||[]).some(t=>t.toLowerCase().includes(q)) || (it.desc||'').toLowerCase().includes(q));
-  entriesCount.textContent = items.length;
-  if (!items.length){
-    entriesContainer.innerHTML='<div class="muted small">표시할 항목이 없습니다.</div>'; return;
-  }
-  for (const it of items){
-    const div = document.createElement('div'); div.className='entry';
-    const imgHtml = it.imageDataURL? `<img src="${it.imageDataURL}" alt="img"/>`:`<div style="width:100%;height:140px;border-radius:6px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">이미지 없음</div>`;
-    // 좋아요 버튼/카운트
-    const liked = isLiked(it.id);
-    const likeBtn = `<button class="like-btn${liked?' liked':''}" data-like="${it.id}" ${liked?'disabled':''}>👍 ${it.likes||0}</button>`;
-    // 댓글 영역
-    const commentWrapperId = "comments-"+it.id;
-    const commentFormId = "commentform-"+it.id;
-    div.innerHTML=`
-      ${imgHtml}
-      <h3 style="margin:8px 0 4px;font-size:16px">${escapeHtml(it.title)}</h3>
-      <div class="meta">${escapeHtml(sliceText(it.desc,140))}</div>
-      <div class="tags">${(it.tags||[]).map(t=>`<div class="tag">${escapeHtml(t)}</div>`).join('')}</div>
-      <div class="meta" style="margin-top:8px">${renderStatsInline(it.stats)}</div>
-      <div style="margin-top:12px">${likeBtn}</div>
-      <div class="comments-section">
-        <div id="${commentWrapperId}"></div>
-        <form id="${commentFormId}" class="comment-form" autocomplete="off">
-          <input name="author" type="text" placeholder="닉네임(선택)" maxlength="20" style="max-width:80px;">
-          <input name="text" type="text" placeholder="댓글을 입력하세요" maxlength="100" required>
-          <button type="submit">댓글</button>
-        </form>
-      </div>
-    `;
-    entriesContainer.appendChild(div);
-
-    // 좋아요 버튼 이벤트
-    div.querySelector('[data-like]').onclick = async function() {
-      if (isLiked(it.id)) return;
-      setLiked(it.id);
-      await db.collection('catalog_entries').doc(it.id).update({ likes: (it.likes||0)+1 });
-      await fetchEntries();
-    };
-
-    // 댓글 렌더링 및 작성 이벤트
-    const commentCont = div.querySelector("#"+commentWrapperId);
-    renderComments(it.id, commentCont);
-    const form = div.querySelector("#"+commentFormId);
-    form.onsubmit = async (e)=>{
+    // 게시판: 글 작성
+    function createPost(e) {
       e.preventDefault();
-      const author = form.author.value.trim().slice(0,20) || "익명";
-      const text = form.text.value.trim().slice(0,100);
-      if(!text) return;
-      await db.collection('catalog_entries').doc(it.id).collection('comments').add({
-        author, text, createdAt:Date.now()
+      const title = document.getElementById('post-title').value;
+      const content = document.getElementById('post-content').value;
+      const user = firebase.auth().currentUser;
+      db.collection('users').doc(user.uid).get().then(doc=>{
+        const nick = doc.exists ? doc.data().nickname : '익명';
+        return db.collection('posts').add({
+          title, content, uid:user.uid, nickname:nick, created:Date.now(), likes:[], comments:0
+        });
+      }).then(()=>{
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        loadPosts();
       });
-      form.text.value = '';
-      renderComments(it.id, commentCont);
-    };
-  }
-}
+    }
 
-/* 보조 */
-function sliceText(s,n){if(!s)return''; return s.length>n?s.slice(0,n-1)+'…':s;}
-function escapeHtml(s){if(!s)return''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function renderStatsInline(obj){if(!obj)return''; return Object.entries(obj).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v)}`).join(' · ');}
-function timeAgo(ts){
-  if (!ts) return '';
-  const now = Date.now();
-  const sec = Math.floor((now - ts)/1000);
-  if (sec<60) return sec+"초 전";
-  if (sec<3600) return Math.floor(sec/60)+"분 전";
-  if (sec<86400) return Math.floor(sec/3600)+"시간 전";
-  return Math.floor(sec/86400)+"일 전";
-}
+    // 게시판: 글 목록 불러오기
+    function loadPosts() {
+      const postList = document.getElementById('posts-list');
+      postList.innerHTML = '<i>불러오는 중...</i>';
+      db.collection('posts').orderBy('created','desc').limit(30).get().then(snap=>{
+        postList.innerHTML = '';
+        if(snap.empty){ postList.innerHTML = '<i>게시글이 없습니다.</i>'; return; }
+        snap.forEach(doc=>{
+          const p = doc.data();
+          postList.innerHTML += `
+          <div class="board-post" id="post-${doc.id}">
+            <div class="title">${escapeHtml(p.title)} <span style="font-size:0.8em;color:#aaa;">by ${escapeHtml(p.nickname)}</span></div>
+            <div>${escapeHtml(p.content)}</div>
+            <div>
+              <button class="like-btn" onclick="toggleLike('${doc.id}', this)">&#128077; <span>${p.likes.length||0}</span></button>
+              <span style="margin-left:20px;">댓글 ${p.comments||0}개</span>
+              <button class="btn" style="margin-left:20px;" onclick="toggleComments('${doc.id}')">댓글 보기</button>
+            </div>
+            <div class="comments-box hidden" id="comments-${doc.id}">
+              <form onsubmit="addComment(event, '${doc.id}')">
+                <input type="text" placeholder="댓글" id="comment-input-${doc.id}" required style="width:60%;">
+                <button class="btn" type="submit">작성</button>
+              </form>
+              <div class="comment-list" id="comment-list-${doc.id}"></div>
+            </div>
+          </div>`;
+          setTimeout(()=>updateLikeBtn(doc.id, p.likes),100);
+        });
+      });
+    }
 
-/* 검색 */
-searchInput.addEventListener('input', renderEntries);
-clearFilter.addEventListener('click', ()=>{ searchInput.value=''; renderEntries(); });
+    // 좋아요 기능
+    function toggleLike(postId, btn) {
+      const user = firebase.auth().currentUser;
+      const postRef = db.collection('posts').doc(postId);
+      postRef.get().then(doc=>{
+        if(!doc.exists) return;
+        let likes = doc.data().likes || [];
+        const idx = likes.indexOf(user.uid);
+        if(idx===-1) likes.push(user.uid);
+        else likes.splice(idx,1);
+        postRef.update({likes});
+        updateLikeBtn(postId, likes);
+        btn.querySelector('span').textContent = likes.length;
+        btn.classList.toggle('liked', idx===-1);
+      });
+    }
+    function updateLikeBtn(postId, likes) {
+      const user = firebase.auth().currentUser;
+      const btn = document.querySelector(`#post-${postId} .like-btn`);
+      if(btn && user) btn.classList.toggle('liked', (likes||[]).includes(user.uid));
+    }
 
-renderStats();
-fetchEntries(); // Firestore에서 데이터 불러오기
-</script>
-</body>
-</html>
+    // 댓글 보기/숨기기
+    function toggleComments(postId) {
+      const box = document.getElementById('comments-'+postId);
+      if(box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        loadComments(postId);
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+    // 댓글 불러오기
+    function loadComments(postId) {
+      const list = document.getElementById('comment-list-'+postId);
+      db.collection('posts').doc(postId).collection('comments')
+        .orderBy('created').get().then(snap=>{
+        list.innerHTML = '';
+        snap.forEach(doc=>{
+          const c = doc.data();
+          list.innerHTML += `<div class="comment"><b>${escapeHtml(c.nickname)}</b>: ${escapeHtml(c.text)}</div>`;
+        });
+      });
+    }
+    // 댓글 작성
+    function addComment(e, postId) {
+      e.preventDefault();
+      const input = document.getElementById('comment-input-'+postId);
+      const text = input.value;
+      const user = firebase.auth().currentUser;
+      db.collection('users').doc(user.uid).get().then(doc=>{
+        const nick = doc.exists ? doc.data().nickname : '익명';
+        return db.collection('posts').doc(postId).collection('comments').add({
+          uid:user.uid, nickname:nick, text, created:Date.now()
+        });
+      }).then(()=>{
+        input.value = '';
+        loadComments(postId);
+        // 댓글 수 증가
+        const postRef = db.collection('posts').doc(postId);
+        postRef.update({comments:firebase.firestore.FieldValue.increment(1)});
+        loadPosts();
+      });
+    }
+
+    // 프로필 보기 및 수정
+    function loadProfile() {
+      const user = firebase.auth().currentUser;
+      document.getElementById('profile-email').textContent = user.email;
+      db.collection('users').doc(user.uid).get().then(doc=>{
+        const d = doc.data();
+        document.getElementById('profile-nickname').value = d.nickname || '';
+        document.getElementById('profile-bio').value = d.bio || '';
+      });
+      document.getElementById('profile-update-msg').textContent = '';
+    }
+    function updateProfile() {
+      const user = firebase.auth().currentUser;
+      const nickname = document.getElementById('profile-nickname').value;
+      const bio = document.getElementById('profile-bio').value;
+      db.collection('users').doc(user.uid).update({nickname, bio}).then(()=>{
+        document.getElementById('profile-update-msg').textContent='저장되었습니다.';
+        loadPosts();
+      });
+    }
+
+    // HTML 이스케이프
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, function(m) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+      });
+    }
+  </script>
 </body>
 </html>
