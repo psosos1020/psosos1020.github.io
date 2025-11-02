@@ -1,184 +1,107 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>ACP 재단 - Azoral, Contain, Porn</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
 <style>
-body { background:#222; color:#eee; font-family:'Malgun Gothic', Arial, sans-serif; margin:0; }
+body { margin:0; font-family:'Malgun Gothic',Arial,sans-serif; background:#222; color:#eee; }
 header { background:#111; padding:24px 0 10px; text-align:center; border-bottom:4px solid #f44; }
-header h1{ margin:0; font-size:2.3em; }
-header h2{ margin:11px 0 0 0; color:#f44; font-size:1.1em;}
+header h1{ margin:0; font-size:2.3em; } header h2{ margin:11px 0 0; color:#f44; font-size:1.1em; }
 .container { max-width:900px; margin:30px auto; padding:24px; background:#292929; border-radius:8px; }
-.hidden { display:none; }
+.hidden{display:none;}
 nav { background:#191919; padding:7px 0; text-align:center; border-bottom:2px solid #444; }
-nav button { background:none; border:none; color:#f44; margin:0 10px; font-size:1.1em; cursor:pointer; }
-.board-post, .comment { background:#181818; margin:18px 0; padding:14px 12px; border-left:5px solid #f44; border-radius:6px; }
-.board-post .title { font-size:1.18em; color:#fff; margin-bottom:7px;}
-.like-btn { cursor:pointer; color:#f44; background:none; border:none; font-size:1.1em; }
-.like-btn.liked { color:#ffd700; }
-.comment { margin-left:30px; border-left:3px solid #4af; }
-input, textarea { background:#222; color:#eee; border:1px solid #444; border-radius:4px; padding:6px 8px; margin-bottom:8px; }
-.btn { background:#f44; color:#fff; border:none; padding:7px 15px; border-radius:5px; cursor:pointer; }
-.btn:disabled { background:#555; }
-.err { color:#f44; margin:7px 0; }
-.info { color:#4af; margin:7px 0; }
-label { display:block; margin-bottom:6px; color:#ddd; font-size:0.95em; }
-
-/* --- 닉네임 모달 --- */
-.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; }
-.modal { background:#1e1e1e; padding:20px; border-radius:8px; width:320px; box-shadow:0 6px 24px rgba(0,0,0,0.6); }
-
-/* --- 구석 닉변 버튼 --- */
-#change-nick-floating {
-  position:fixed;
-  bottom:10px;
-  right:10px;
-  font-size:11px;
-  opacity:0.45;
-  padding:4px 6px;
-}
-#change-nick-floating:hover { opacity:1; }
+nav button{ background:none; border:none; color:#f44; margin:0 10px; font-size:1.1em; cursor:pointer; }
+.board-post, .comment{background:#181818; margin:18px 0; padding:14px 12px; border-left:5px solid #f44; border-radius:6px;}
+.board-post .title{font-size:1.18em; color:#fff; margin-bottom:7px;}
+input, textarea{background:#222; color:#eee; border:1px solid #444; border-radius:4px; padding:6px 8px; margin-bottom:8px;}
+.btn{background:#f44; color:#fff; border:none; padding:7px 15px; border-radius:5px; cursor:pointer;}
+.btn:disabled{background:#555;}
+.err{color:#f44; margin:7px 0;}
+.info{color:#4af; margin:7px 0;}
+.modal-backdrop {position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; transition:0.25s;}
+.modal-backdrop.show{opacity:1;}
+.modal {background:#1e1e1e; padding:20px; border-radius:8px; width:320px; box-shadow:0 6px 24px rgba(0,0,0,0.6);}
+#change-nick-floating{position:fixed; bottom:10px; right:10px; font-size:11px; opacity:0.45; padding:4px 6px;}
+#change-nick-floating:hover{opacity:1;}
 </style>
 </head>
-
 <body>
+
 <header>
-  <h1>ACP 재단</h1>
-  <h2>닉네임 설정 전용 모드</h2>
+<h1>ACP 재단</h1>
+<h2>아조랄, 격리, 포르노</h2>
 </header>
 
-<nav id="navbar">
-  <button onclick="showPage('board')">게시판</button>
-  <button onclick="showPage('profile')">프로필</button>
+<nav>
+<button onclick="showPage('board')">게시판</button>
+<button onclick="showPage('profile')">프로필</button>
 </nav>
 
 <div class="container">
 
-  <!-- 게시판 -->
-  <div id="board-page">
-    <h3>게시판</h3>
-
-    <form id="post-form" onsubmit="createPost(event)" style="margin-bottom:18px;">
-      <input id="post-title" type="text" placeholder="제목" required style="width:200px;">
-      <textarea id="post-content" placeholder="내용" required rows="2" style="width:60%;"></textarea>
-      <button class="btn" type="submit">글쓰기</button>
-    </form>
-    <div id="posts-list"></div>
-  </div>
-
-  <!-- 프로필 -->
-  <div id="profile-page" class="profile-box hidden">
-    <h3>프로필</h3>
-    <label for="profile-nickname">닉네임 변경</label>
-    <input id="profile-nickname" type="text" style="width:200px;">
-    <button class="btn" onclick="changeNickname()">변경</button>
-    <div id="profile-msg" class="info"></div>
-    <div id="profile-err" class="err"></div>
-  </div>
+<div id="board-page">
+<h3>게시판</h3>
+<form id="post-form" onsubmit="createPost(event)">
+<input id="post-title" type="text" placeholder="제목" style="width:200px;" required>
+<textarea id="post-content" placeholder="내용" rows="2" style="width:60%;" required></textarea>
+<button class="btn" type="submit">글쓰기</button>
+</form>
+<div id="posts-list"></div>
 </div>
 
-<!-- 구석 닉넴 변경 버튼 -->
+<div id="profile-page" class="hidden">
+<h3>프로필</h3>
+<label for="profile-nickname">닉네임 변경</label>
+<input id="profile-nickname" type="text" style="width:200px;">
+<button class="btn" onclick="changeNickname()">변경</button>
+<div id="profile-msg" class="info"></div>
+<div id="profile-err" class="err"></div>
+</div>
+</div>
+
 <button id="change-nick-floating" class="btn" onclick="showSetNick()">닉네임 변경</button>
 
-<!-- 닉네임 모달 -->
-<div id="nick-modal" class="modal-backdrop hidden">
-  <div class="modal">
-    <h4>닉네임 설정</h4>
-    <label for="modal-nick">닉네임</label>
-    <input id="modal-nick" type="text" placeholder="2~20자">
-    <div id="modal-err" class="err"></div>
-    <button class="btn" onclick="applyNickname()">확인</button>
-    <button class="btn" onclick="closeNickModal()" style="margin-left:8px;">취소</button>
-    <div style="margin-top:8px;color:#999;font-size:0.9em;">
-      로그인이 없으므로 닉네임은 로컬에 저장됩니다
-    </div>
-  </div>
+<div id="nick-modal" class="modal-backdrop">
+<div class="modal">
+<h4>닉네임 설정</h4>
+<label for="modal-nick">닉네임 (2~20자)</label>
+<input id="modal-nick" type="text" placeholder="닉네임 입력">
+<div id="modal-err" class="err"></div>
+<div style="margin-top:10px;">
+<button class="btn" onclick="applyNickname()">확인</button>
+<button class="btn" onclick="closeNickModal()" style="margin-left:8px;">취소</button>
+<button class="btn" onclick="genRandomNick()" style="margin-left:8px;">랜덤</button>
+</div>
+<div style="margin-top:8px;color:#999;font-size:0.9em;">로그인 없으므로 로컬 저장됩니다.</div>
+</div>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey:"AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",
-  authDomain:"gaysdogam.firebaseapp.com",
-  projectId:"gaysdogam",
-  storageBucket:"gaysdogam.firebasestorage.app",
-  messagingSenderId:"505108692237",
-  appId:"1:505108692237:web:1e7bf3d6f855db7b238444",
-  measurementId:"G-MCNTRDN70C"
-};
+const firebaseConfig={apiKey:"AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",authDomain:"gaysdogam.firebaseapp.com",projectId:"gaysdogam",storageBucket:"gaysdogam.firebasestorage.app",messagingSenderId:"505108692237",appId:"1:505108692237:web:1e7bf3d6f855db7b238444",measurementId:"G-MCNTRDN70C"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
 
-/* 유틸 */
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-
+function escapeHtml(s){return(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function getLocalNick(){return localStorage.getItem('nickname')||'';}
 function setLocalNick(n){localStorage.setItem('nickname',n);}
 function showPage(p){document.getElementById('board-page').classList.add('hidden');document.getElementById('profile-page').classList.add('hidden');document.getElementById(p+'-page').classList.remove('hidden');}
+function showSetNick(){document.getElementById('modal-nick').value=getLocalNick();document.getElementById('modal-err').textContent='';document.getElementById('nick-modal').classList.add('show');}
+function closeNickModal(){document.getElementById('nick-modal').classList.remove('show');if(!getLocalNick())showSetNick();}
+function applyNickname(){const n=(document.getElementById('modal-nick').value||'').trim();const e=document.getElementById('modal-err');e.textContent='';if(!n){e.textContent='입력';return;}if(n.length<2||n.length>20){e.textContent='2~20자';return;}if(/\s/.test(n)){e.textContent='공백 불가';return;}setLocalNick(n);document.getElementById('nick-modal').classList.remove('show');}
+function genRandomNick(){const r='User'+Math.floor(Math.random()*9000+1000);document.getElementById('modal-nick').value=r;}
 
-/* 닉네임 모달 */
-function showSetNick(){document.getElementById('modal-nick').value=getLocalNick();document.getElementById('modal-err').textContent='';document.getElementById('nick-modal').classList.remove('hidden');}
-function closeNickModal(){document.getElementById('nick-modal').classList.add('hidden');if(!getLocalNick())showSetNick();}
-function applyNickname(){
-  const n=(document.getElementById('modal-nick').value||'').trim();
-  const e=document.getElementById('modal-err');
-  e.textContent='';
-  if(!n){e.textContent='닉네임 입력';return;}
-  if(n.length<2||n.length>20){e.textContent='2~20자';return;}
-  if(/\s/.test(n)){e.textContent='공백 불가';return;}
-  setLocalNick(n);
-  document.getElementById('nick-modal').classList.add('hidden');
-}
-
-/* 로딩 */
 window.onload=()=>{loadPosts();if(!getLocalNick())showSetNick();};
 
-/* 닉네임 변경 */
-function changeNickname(){
-  const n=(document.getElementById('profile-nickname').value||'').trim();
-  const m=document.getElementById('profile-msg');
-  const e=document.getElementById('profile-err');
-  m.textContent='';e.textContent='';
-  if(!n){e.textContent='입력';return;}
-  if(n.length<2||n.length>20){e.textContent='2~20자';return;}
-  if(/\s/.test(n)){e.textContent='공백 불가';return;}
-  setLocalNick(n);
-  m.textContent='완료';
-}
+function changeNickname(){const n=(document.getElementById('profile-nickname').value||'').trim();const m=document.getElementById('profile-msg');const e=document.getElementById('profile-err');m.textContent='';e.textContent='';if(!n){e.textContent='입력';return;}if(n.length<2||n.length>20){e.textContent='2~20자';return;}if(/\s/.test(n)){e.textContent='공백 불가';return;}setLocalNick(n);m.textContent='완료';}
 
-/* 게시글 */
-async function createPost(ev){
-  ev.preventDefault();
-  const t=(document.getElementById('post-title').value||'').trim();
-  const c=(document.getElementById('post-content').value||'').trim();
-  const n=getLocalNick();
-  if(!n){alert('닉네임 설정');showSetNick();return;}
-  if(!t||!c)return;
-  await db.collection('posts').add({title:t,content:c,nickname:n,created:Date.now(),likes:[],comments:0});
-  document.getElementById('post-title').value='';
-  document.getElementById('post-content').value='';
-  loadPosts();
-}
+async function createPost(ev){ev.preventDefault();const t=(document.getElementById('post-title').value||'').trim();const c=(document.getElementById('post-content').value||'').trim();const n=getLocalNick();if(!n){alert('닉네임 설정');showSetNick();return;}if(!t||!c)return;await db.collection('posts').add({title:t,content:c,nickname:n,created:Date.now(),likes:[],comments:0});document.getElementById('post-title').value='';document.getElementById('post-content').value='';loadPosts();}
 
-function loadPosts(){
-  const box=document.getElementById('posts-list');
-  box.innerHTML='<i>불러오는 중...</i>';
-  db.collection('posts').orderBy('created','desc').limit(50).get().then(s=>{
-    box.innerHTML='';
-    if(s.empty){box.innerHTML='<i>없음</i>';return;}
-    s.forEach(d=>{
-      const p=d.data();
-      box.innerHTML+=`
-        <div class="board-post">
-          <div class="title">${escapeHtml(p.title)} <span style="font-size:0.8em;color:#aaa;">by ${escapeHtml(p.nickname||'익명')}</span></div>
-          <div>${escapeHtml(p.content)}</div>
-        </div>`;
-    });
-  });
+function loadPosts(){const box=document.getElementById('posts-list');box.innerHTML='<i>불러오는 중...</i>';db.collection('posts').orderBy('created','desc').limit(50).get().then(s=>{box.innerHTML='';if(s.empty){box.innerHTML='<i>없음</i>';return;}s.forEach(d=>{const p=d.data();box.innerHTML+=`<div class="board-post"><div class="title">${escapeHtml(p.title)} <span style="font-size:0.8em;color:#aaa;">by ${escapeHtml(p.nickname||'익명')}</span></div><div>${escapeHtml(p.content)}</div></div>`;});}).catch(console.error);
 }
 </script>
+
 </body>
 </html>
