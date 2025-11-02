@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>ACP 재단 - Azoral Contail Porn</title>
+  <title>ACP 재단 - Azoral Contain Porn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -28,41 +28,49 @@
     .btn { background:#f44; color:#fff; border:none; padding:7px 15px; border-radius:5px; cursor:pointer;}
     .btn:disabled { background:#555; }
     .err { color:#f44; margin:7px 0;}
+    .info { color:#4af; margin:7px 0;}
+    label { display:block; margin-bottom:6px; color:#ddd; font-size:0.95em;}
   </style>
 </head>
 <body>
   <header>
     <h1>ACP 재단</h1>
-    <h2>Azoral Contail Porn Foundation</h2>
+    <h2>닉네임 기반 로그인 시스템</h2>
   </header>
   <nav id="navbar" class="hidden">
     <button onclick="showPage('board')">게시판</button>
     <button onclick="showPage('profile')">프로필</button>
-    <button onclick="firebase.auth().signOut()">로그아웃</button>
+    <button onclick="logout()">로그아웃</button>
   </nav>
   <div class="container">
     <!-- 로그인/회원가입 -->
     <div id="login-page" class="login-box">
       <h3>로그인</h3>
       <div>
-        <input id="login-email" type="email" placeholder="이메일"><br>
-        <input id="login-password" type="password" placeholder="비밀번호"><br>
+        <label for="login-nickname">닉네임</label>
+        <input id="login-nickname" type="text" placeholder="닉네임" required><br>
+        <label for="login-password">비밀번호</label>
+        <input id="login-password" type="password" placeholder="비밀번호" required><br>
         <button class="btn" onclick="login()">로그인</button>
         <button class="btn" onclick="showSignup()">회원가입</button>
       </div>
       <div id="login-error" class="err"></div>
     </div>
+
     <div id="signup-page" class="signup-box hidden">
       <h3>회원가입</h3>
       <div>
-        <input id="signup-email" type="email" placeholder="이메일"><br>
-        <input id="signup-password" type="password" placeholder="비밀번호"><br>
-        <input id="signup-nickname" type="text" placeholder="닉네임"><br>
+        <label for="signup-nickname">닉네임</label>
+        <input id="signup-nickname" type="text" placeholder="닉네임" required><br>
+        <label for="signup-password">비밀번호</label>
+        <input id="signup-password" type="password" placeholder="비밀번호" required><br>
         <button class="btn" onclick="signup()">가입하기</button>
         <button class="btn" onclick="showLogin()">뒤로가기</button>
       </div>
       <div id="signup-error" class="err"></div>
+      <div id="signup-info" class="info">닉네임은 중복 불가합니다.</div>
     </div>
+
     <!-- 게시판 -->
     <div id="board-page" class="hidden">
       <h3>게시판</h3>
@@ -73,33 +81,36 @@
       </form>
       <div id="posts-list"></div>
     </div>
+
     <!-- 프로필 -->
     <div id="profile-page" class="profile-box hidden">
       <h3>프로필</h3>
       <div>
-        <b>이메일:</b> <span id="profile-email"></span><br>
-        <b>닉네임:</b> <input id="profile-nickname" type="text" style="width:140px;">
+        <b>회원ID(uid):</b> <span id="profile-uid"></span><br><br>
+        <label for="profile-nickname">닉네임</label>
+        <input id="profile-nickname" type="text" style="width:140px;">
         <button class="btn" onclick="updateProfile()">수정</button><br>
-        <b>자기소개:</b><br>
+        <label for="profile-bio">자기소개</label>
         <textarea id="profile-bio" rows="2" style="width:70%;"></textarea>
         <button class="btn" onclick="updateProfile()">수정</button>
       </div>
       <div id="profile-update-msg" style="color:#4af;"></div>
+      <div id="profile-error" class="err"></div>
     </div>
   </div>
+
   <!-- Firebase 및 기능 스크립트 -->
   <script>
-    // Firebase 설정
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",
-  authDomain: "gaysdogam.firebaseapp.com",
-  projectId: "gaysdogam",
-  storageBucket: "gaysdogam.firebasestorage.app",
-  messagingSenderId: "505108692237",
-  appId: "1:505108692237:web:1e7bf3d6f855db7b238444",
-  measurementId: "G-MCNTRDN70C"
-};
+    // Firebase 설정 (기존 키 유지)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCC6MFueLsHU1oZnM0Q3mvm_sU_tMPie8c",
+      authDomain: "gaysdogam.firebaseapp.com",
+      projectId: "gaysdogam",
+      storageBucket: "gaysdogam.firebasestorage.app",
+      messagingSenderId: "505108692237",
+      appId: "1:505108692237:web:1e7bf3d6f855db7b238444",
+      measurementId: "G-MCNTRDN70C"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -120,30 +131,81 @@ const firebaseConfig = {
       document.getElementById('login-page').classList.remove('hidden');
     }
 
-    // 로그인/회원가입 로직
-    function login() {
-      const email = document.getElementById('login-email').value;
-      const pw = document.getElementById('login-password').value;
-      document.getElementById('login-error').textContent = '';
-      firebase.auth().signInWithEmailAndPassword(email, pw)
-        .catch(e=>{document.getElementById('login-error').textContent=e.message;});
+    // 로그아웃
+    function logout() {
+      firebase.auth().signOut();
     }
-    function signup() {
-      const email = document.getElementById('signup-email').value;
-      const pw = document.getElementById('signup-password').value;
-      const nick = document.getElementById('signup-nickname').value;
+
+    // 로그인 (닉네임 + 비밀번호)
+    async function login() {
+      document.getElementById('login-error').textContent = '';
+      const nick = (document.getElementById('login-nickname').value || '').trim();
+      const pw = (document.getElementById('login-password').value || '').trim();
+      if(!nick || !pw) { document.getElementById('login-error').textContent = '닉네임과 비밀번호를 입력하세요.'; return; }
+
+      try {
+        // 닉네임 -> uid 조회
+        const snap = await db.collection('users').where('nickname', '==', nick).limit(1).get();
+        if(snap.empty) { document.getElementById('login-error').textContent = '존재하지 않는 닉네임입니다.'; return; }
+        const uid = snap.docs[0].id;
+        const authEmail = `${uid}@local.auth`;
+        await firebase.auth().signInWithEmailAndPassword(authEmail, pw);
+        // 성공 시 onAuthStateChanged가 처리
+      } catch(e) {
+        console.error(e);
+        document.getElementById('login-error').textContent = '로그인 실패: 비밀번호를 확인하세요.';
+      }
+    }
+
+    // 회원가입 (닉네임 + 비밀번호)
+    async function signup() {
       document.getElementById('signup-error').textContent = '';
-      firebase.auth().createUserWithEmailAndPassword(email, pw)
-        .then(user=>{
-          return db.collection('users').doc(user.user.uid).set({ nickname:nick, bio:'', email:email });
-        })
-        .then(()=>{ showLogin(); alert('회원가입 완료! 로그인해주세요.'); })
-        .catch(e=>{document.getElementById('signup-error').textContent=e.message;});
+      const nick = (document.getElementById('signup-nickname').value || '').trim();
+      const pw = (document.getElementById('signup-password').value || '').trim();
+      if(!nick || !pw) { document.getElementById('signup-error').textContent = '닉네임과 비밀번호를 입력하세요.'; return; }
+      if(nick.length < 2 || nick.length > 20) { document.getElementById('signup-error').textContent = '닉네임은 2~20자여야 합니다.'; return; }
+      if(pw.length < 6) { document.getElementById('signup-error').textContent = '비밀번호는 최소 6자여야 합니다.'; return; }
+
+      try {
+        // 중복 검사
+        const existing = await db.collection('users').where('nickname', '==', nick).limit(1).get();
+        if(!existing.empty) { document.getElementById('signup-error').textContent = '이미 사용 중인 닉네임입니다.'; return; }
+
+        // 임시 이메일로 사용자 생성
+        const tempEmail = `${Date.now()}_${Math.random().toString(36).slice(2,10)}@local.auth`;
+        const userCred = await firebase.auth().createUserWithEmailAndPassword(tempEmail, pw);
+        const uid = userCred.user.uid;
+        const finalEmail = `${uid}@local.auth`;
+
+        // 이메일을 uid 기반으로 업데이트 (현재 로그인되어 있으므로 가능)
+        await userCred.user.updateEmail(finalEmail);
+
+        // users 문서 생성: doc id = uid
+        await db.collection('users').doc(uid).set({
+          nickname: nick,
+          email: finalEmail,
+          bio: ''
+        });
+
+        // 로그아웃 시켜서 사용자가 로그인 페이지에서 로그인하도록 유도 (선택사항)
+        await firebase.auth().signOut();
+        showLogin();
+        alert('회원가입 완료! 로그인하세요.');
+      } catch(e) {
+        console.error(e);
+        // 친절한 메시지 제공
+        if(e.code === 'auth/email-already-in-use') {
+          document.getElementById('signup-error').textContent = '이미 사용 중인 계정입니다.';
+        } else {
+          document.getElementById('signup-error').textContent = '회원가입 실패: ' + (e.message || '');
+        }
+      }
     }
 
     // 인증 상태 변경 감지
     firebase.auth().onAuthStateChanged(user=>{
       if(user){
+        // 로그인 성공
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('signup-page').classList.add('hidden');
         document.getElementById('navbar').classList.remove('hidden');
@@ -157,21 +219,27 @@ const firebaseConfig = {
     });
 
     // 게시판: 글 작성
-    function createPost(e) {
+    async function createPost(e) {
       e.preventDefault();
-      const title = document.getElementById('post-title').value;
-      const content = document.getElementById('post-content').value;
+      const title = (document.getElementById('post-title').value || '').trim();
+      const content = (document.getElementById('post-content').value || '').trim();
+      if(!title || !content) return;
       const user = firebase.auth().currentUser;
-      db.collection('users').doc(user.uid).get().then(doc=>{
+      if(!user) { alert('로그인이 필요합니다.'); return; }
+
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
         const nick = doc.exists ? doc.data().nickname : '익명';
-        return db.collection('posts').add({
+        await db.collection('posts').add({
           title, content, uid:user.uid, nickname:nick, created:Date.now(), likes:[], comments:0
         });
-      }).then(()=>{
         document.getElementById('post-title').value = '';
         document.getElementById('post-content').value = '';
         loadPosts();
-      });
+      } catch(e) {
+        console.error(e);
+        alert('글 작성 중 오류가 발생했습니다.');
+      }
     }
 
     // 게시판: 글 목록 불러오기
@@ -188,7 +256,7 @@ const firebaseConfig = {
             <div class="title">${escapeHtml(p.title)} <span style="font-size:0.8em;color:#aaa;">by ${escapeHtml(p.nickname)}</span></div>
             <div>${escapeHtml(p.content)}</div>
             <div>
-              <button class="like-btn" onclick="toggleLike('${doc.id}', this)">&#128077; <span>${p.likes.length||0}</span></button>
+              <button class="like-btn" onclick="toggleLike('${doc.id}', this)">&#128077; <span>${(p.likes && p.likes.length) || 0}</span></button>
               <span style="margin-left:20px;">댓글 ${p.comments||0}개</span>
               <button class="btn" style="margin-left:20px;" onclick="toggleComments('${doc.id}')">댓글 보기</button>
             </div>
@@ -202,24 +270,28 @@ const firebaseConfig = {
           </div>`;
           setTimeout(()=>updateLikeBtn(doc.id, p.likes),100);
         });
-      });
+      }).catch(e=>{ console.error(e); postList.innerHTML = '<i>불러오기 실패</i>'; });
     }
 
     // 좋아요 기능
-    function toggleLike(postId, btn) {
+    async function toggleLike(postId, btn) {
       const user = firebase.auth().currentUser;
+      if(!user) { alert('로그인이 필요합니다.'); return; }
       const postRef = db.collection('posts').doc(postId);
-      postRef.get().then(doc=>{
+      try {
+        const doc = await postRef.get();
         if(!doc.exists) return;
         let likes = doc.data().likes || [];
         const idx = likes.indexOf(user.uid);
         if(idx===-1) likes.push(user.uid);
         else likes.splice(idx,1);
-        postRef.update({likes});
+        await postRef.update({likes});
         updateLikeBtn(postId, likes);
-        btn.querySelector('span').textContent = likes.length;
-        btn.classList.toggle('liked', idx===-1);
-      });
+        if(btn && btn.querySelector) {
+          const span = btn.querySelector('span');
+          if(span) span.textContent = likes.length;
+        }
+      } catch(e) { console.error(e); }
     }
     function updateLikeBtn(postId, likes) {
       const user = firebase.auth().currentUser;
@@ -247,48 +319,72 @@ const firebaseConfig = {
           const c = doc.data();
           list.innerHTML += `<div class="comment"><b>${escapeHtml(c.nickname)}</b>: ${escapeHtml(c.text)}</div>`;
         });
-      });
+      }).catch(e=>{ console.error(e); list.innerHTML = '<i>댓글 불러오기 실패</i>'; });
     }
     // 댓글 작성
-    function addComment(e, postId) {
+    async function addComment(e, postId) {
       e.preventDefault();
       const input = document.getElementById('comment-input-'+postId);
-      const text = input.value;
+      const text = (input.value || '').trim();
+      if(!text) return;
       const user = firebase.auth().currentUser;
-      db.collection('users').doc(user.uid).get().then(doc=>{
+      if(!user) { alert('로그인이 필요합니다.'); return; }
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
         const nick = doc.exists ? doc.data().nickname : '익명';
-        return db.collection('posts').doc(postId).collection('comments').add({
+        await db.collection('posts').doc(postId).collection('comments').add({
           uid:user.uid, nickname:nick, text, created:Date.now()
         });
-      }).then(()=>{
         input.value = '';
-        loadComments(postId);
         // 댓글 수 증가
         const postRef = db.collection('posts').doc(postId);
-        postRef.update({comments:firebase.firestore.FieldValue.increment(1)});
+        await postRef.update({comments:firebase.firestore.FieldValue.increment(1)});
+        loadComments(postId);
         loadPosts();
-      });
+      } catch(e) {
+        console.error(e);
+        alert('댓글 작성 실패');
+      }
     }
 
     // 프로필 보기 및 수정
     function loadProfile() {
       const user = firebase.auth().currentUser;
-      document.getElementById('profile-email').textContent = user.email;
+      if(!user) return;
+      document.getElementById('profile-uid').textContent = user.uid;
       db.collection('users').doc(user.uid).get().then(doc=>{
-        const d = doc.data();
+        const d = doc.exists ? doc.data() : {};
         document.getElementById('profile-nickname').value = d.nickname || '';
         document.getElementById('profile-bio').value = d.bio || '';
-      });
+      }).catch(e=>{ console.error(e); document.getElementById('profile-error').textContent='프로필 로드 실패';});
       document.getElementById('profile-update-msg').textContent = '';
+      document.getElementById('profile-error').textContent = '';
     }
-    function updateProfile() {
+
+    async function updateProfile() {
+      document.getElementById('profile-update-msg').textContent = '';
+      document.getElementById('profile-error').textContent = '';
       const user = firebase.auth().currentUser;
-      const nickname = document.getElementById('profile-nickname').value;
-      const bio = document.getElementById('profile-bio').value;
-      db.collection('users').doc(user.uid).update({nickname, bio}).then(()=>{
-        document.getElementById('profile-update-msg').textContent='저장되었습니다.';
+      if(!user) { document.getElementById('profile-error').textContent='로그인이 필요합니다.'; return; }
+      const nickname = (document.getElementById('profile-nickname').value || '').trim();
+      const bio = (document.getElementById('profile-bio').value || '').trim();
+      if(!nickname) { document.getElementById('profile-error').textContent='닉네임을 입력하세요.'; return; }
+      if(nickname.length < 2 || nickname.length > 20) { document.getElementById('profile-error').textContent='닉네임은 2~20자여야 합니다.'; return; }
+
+      try {
+        // 닉네임을 다른 사용자가 쓰고 있는지 검사 (허용되는 경우: 본인 닉네임)
+        const snap = await db.collection('users').where('nickname', '==', nickname).limit(1).get();
+        if(!snap.empty && snap.docs[0].id !== user.uid) {
+          document.getElementById('profile-error').textContent = '이미 사용 중인 닉네임입니다.';
+          return;
+        }
+        await db.collection('users').doc(user.uid).update({nickname, bio});
+        document.getElementById('profile-update-msg').textContent = '저장되었습니다.';
         loadPosts();
-      });
+      } catch(e) {
+        console.error(e);
+        document.getElementById('profile-error').textContent = '프로필 저장 실패';
+      }
     }
 
     // HTML 이스케이프
