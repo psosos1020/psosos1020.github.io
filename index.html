@@ -298,7 +298,7 @@ function processTurn(currentPlayer, opponent, cardsToPlay) {
 // --- 턴 관리 및 시작 ---
 function initGame() {
     player1 = { name: '플레이어', hp: STARTING_HP, deck: createDeck(), hand: [], def: 0, isHuman: true, strategy: null };
-    player2 = { name: 'AI (강철 벽)', hp: STARTING_HP, deck: createDeck(), hand: [], def: 0, isHuman: false, strategy: tankStrategy };
+    player2 = { name: 'AI (전모)', hp: STARTING_HP, deck: createDeck(), hand: [], def: 0, isHuman: false, strategy: tankStrategy };
 
     shuffle(player1.deck);
     shuffle(player2.deck);
@@ -309,7 +309,7 @@ function initGame() {
     currentTurn = 0;
     isGameOver = false;
     selectedCards = [];
-    document.getElementById('log-area').innerHTML = `<p>*** 게임 시작! AI (강철 벽)을 상대로 승리하세요! ***</p>`;
+    document.getElementById('log-area').innerHTML = `<p>*** 게임 시작! AI (전모씨)를를 상대로 승리하세요! ***</p>`;
     document.getElementById('end-turn-btn').disabled = false;
     document.getElementById('winner-display').style.display = 'none';
 
