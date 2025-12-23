@@ -3,94 +3,149 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>쌌도르 ai</title>
+  <title>음성 AI 챗봇</title>
   <style>
-    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;margin:20px;background:#f7f9fb}
-    .card{max-width:900px;margin:0 auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(12,34,56,.06)}
-    input, textarea, button, select{font-size:14px;padding:8px;border:1px solid #ddd;border-radius:8px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-    textarea{min-height:72px;flex:1}
-    #log{white-space:pre-wrap;background:#fafafa;padding:12px;border-radius:8px;border:1px solid #eee;max-height:360px;overflow:auto}
-    small{color:#666}
+    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;margin:20px;background:#f0f2f5;color:#333}
+    .card{max-width:600px;margin:0 auto;background:#fff;padding:24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1)}
+    h2{text-align:center;color:#1a73e8;margin-bottom:20px}
+    .row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+    input, textarea, select, button{padding:10px;border:1px solid #ddd;border-radius:12px;outline:none}
+    textarea{flex:1;min-height:80px;resize:none;border:2px solid #e0e0e0}
+    textarea:focus{border-color:#1a73e8}
+    button{cursor:pointer;background:#1a73e8;color:#fff;border:none;transition:0.2s;font-weight:bold}
+    button:hover{background:#1557b0}
+    button:active{transform:scale(0.98)}
+    #voiceBtn{background:#ea4335} /* 음성 버튼 빨간색 */
+    #voiceBtn.active{background:#34a853;animation:pulse 1.5s infinite} /* 활성화시 초록색 */
+    @keyframes pulse { 0% {opacity: 1} 50% {opacity: 0.5} 100% {opacity: 1} }
+    #log{background:#f8f9fa;padding:15px;border-radius:12px;border:1px solid #eee;height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+    .msg{padding:10px 14px;border-radius:15px;max-width:85%;line-height:1.5}
+    .user-msg{align-self:flex-end;background:#1a73e8;color:#fff}
+    .ai-msg{align-self:flex-start;background:#e9ecef;color:#333}
+    .status-msg{text-align:center;font-size:12px;color:#888}
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>똥쌌도르</h2>
+    <h2>AI 음성 대화 시스템</h2>
 
     <div class="row">
-      <input id="hfToken" type="password" placeholder="HF 토큰 (Bearer)" style="min-width:420px" />
-      <select id="model">
-        <option value="MLP-KTLim/llama-3-Korean-Bllossom-8B:featherless-ai">MLP-KTLim/llama-3-Korean-Bllossom-8B</option>
-        <option value="gpt2"</option>
+      <input id="hfToken" type="password" placeholder="HF 토큰 입력" style="flex:1" />
+      <button id="save">저장</button>
+      <button id="clear" style="background:#666">삭제</button>
+    </div>
+    
+    <div class="row">
+      <select id="model" style="width:100%">
+        <option value="MLP-KTLim/llama-3-Korean-Bllossom-8B:featherless-ai">Llama-3-Korean-Bllossom-8B</option>
       </select>
-      <button id="save">토큰 저장</button>
-      <button id="clear">토큰 삭제</button>
     </div>
 
+    <div id="log">
+        <div class="status-msg">토큰을 입력하고 대화를 시작하세요.</div>
+    </div>
+
+    <div class="row" style="margin-top:15px">
+      <textarea id="prompt" placeholder="메시지를 입력하거나 음성 버튼을 누르세요..."></textarea>
+    </div>
     <div class="row">
-      <textarea id="prompt">What is the capital of France?</textarea>
-      <button id="send">보내기</button>
+      <button id="send" style="flex:2">채팅 전송 (Ctrl+Enter)</button>
+      <button id="voiceBtn" style="flex:1">음성 인식 시작</button>
     </div>
-
-    <div id="log"></div>
-
-    <p><small>뭐 인마</small></p>
   </div>
 
   <script>
     const hfInput = document.getElementById('hfToken');
-    const saveBtn = document.getElementById('save');
-    const clearBtn = document.getElementById('clear');
     const modelSel = document.getElementById('model');
     const promptEl = document.getElementById('prompt');
-    const sendBtn = document.getElementById('send');
     const log = document.getElementById('log');
+    const voiceBtn = document.getElementById('voiceBtn');
 
-    // 로컬 스토리지에 토큰/모델 저장 (사용자 동의 필요)
+    // 설정 로드
     hfInput.value = localStorage.getItem('HF_TOKEN') || '';
-    modelSel.value = localStorage.getItem('HF_MODEL') || modelSel.value;
-
-    saveBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (!hfInput.value.trim()) return alert('토큰을 입력하세요.');
+    
+    document.getElementById('save').onclick = () => {
       localStorage.setItem('HF_TOKEN', hfInput.value.trim());
-      localStorage.setItem('HF_MODEL', modelSel.value);
-      alert('토큰 저장됨 (localStorage).');
-    });
+      alert('저장되었습니다.');
+    };
 
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('clear').onclick = () => {
       localStorage.removeItem('HF_TOKEN');
       hfInput.value = '';
-      alert('토큰 삭제됨.');
-    });
+      alert('삭제되었습니다.');
+    };
 
-    function appendLine(text) {
-      log.textContent += text + '\n';
+    // --- 음성 인식 (STT) 설정 ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ko-KR';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        promptEl.value = text;
+        addMessage('user', text);
+        sendPrompt(text); // 인식 즉시 전송
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        voiceBtn.textContent = "음성 인식 시작";
+        voiceBtn.classList.remove('active');
+      };
+
+      recognition.onerror = (err) => {
+        console.error("STT 에러:", err.error);
+        isListening = false;
+        voiceBtn.classList.remove('active');
+      };
+    }
+
+    voiceBtn.onclick = () => {
+      if (!recognition) return alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+        isListening = true;
+        voiceBtn.textContent = "듣고 있어요...";
+        voiceBtn.classList.add('active');
+      }
+    };
+
+    // --- 음성 합성 (TTS) 설정 ---
+    function speak(text) {
+      window.speechSynthesis.cancel(); // 현재 재생중인 소리 중단
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // --- 화면 메시지 추가 ---
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}-msg`;
+      div.textContent = text;
+      log.appendChild(div);
       log.scrollTop = log.scrollHeight;
     }
 
-    // 핵심: OpenAI JS 예제와 동일한 동작을 fetch로 구현
-    async function sendPrompt() {
+    // --- API 전송 로직 ---
+    async function sendPrompt(customText) {
       const HF_TOKEN = localStorage.getItem('HF_TOKEN') || hfInput.value.trim();
-      if (!HF_TOKEN) return alert('HF 토큰이 필요합니다.');
+      if (!HF_TOKEN) return alert('토큰을 입력해주세요.');
 
-      const model = modelSel.value;
-      const userText = promptEl.value.trim();
+      const userText = customText || promptEl.value.trim();
       if (!userText) return;
 
-      appendLine('> 사용자: ' + userText);
-      appendLine('...요청 중 (Hugging Face Router)');
-
-      const payload = {
-        model: model,
-        messages: [
-          { role: "user", content: userText }
-        ],
-        max_tokens: 512,
-        temperature: 0.2
-      };
+      if (!customText) addMessage('user', userText); // 채팅 전송일 때만 화면 추가
+      promptEl.value = '';
 
       try {
         const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
@@ -99,54 +154,32 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + HF_TOKEN
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            model: modelSel.value,
+            messages: [{ role: "user", content: userText }],
+            max_tokens: 512,
+            temperature: 0.7
+          }),
         });
 
-        if (!res.ok) {
-          const text = await res.text().catch(() => res.statusText);
-          appendLine(`[HTTP ${res.status}] 오류 응답: ${text}`);
-          console.error('응답 본문:', text);
-          return;
-        }
-
         const data = await res.json();
+        const aiResponse = data.choices[0].message.content;
 
-        // 원래 Node 코드에서 console.log(chatCompletion.choices[0].message);
-        // 동일하게 안전하게 파싱해서 출력
-        const choiceMessage = data?.choices?.[0]?.message ?? data?.choices?.[0]?.text ?? null;
+        addMessage('ai', aiResponse);
+        speak(aiResponse); // 답변을 목소리로 읽어줌
 
-        appendLine('응답 원시 JSON:');
-        appendLine(JSON.stringify(data, null, 2));
-        appendLine('----');
-
-        appendLine('parsed (chatCompletion.choices[0].message):');
-        appendLine(choiceMessage ? JSON.stringify(choiceMessage, null, 2) : '응답에서 message 필드를 찾을 수 없음');
-
-        // 콘솔에도 동일한 형태로 출력 (요청하신대로)
-        console.log('chatCompletion (choices[0].message):', choiceMessage);
       } catch (err) {
-        appendLine('요청 실패: ' + err.message);
-        console.error(err);
+        addMessage('ai', "오류가 발생했습니다: " + err.message);
       }
     }
 
-    sendBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      sendPrompt();
-    });
-
-    // Enter만으로 보내기 (Ctrl+Enter 사용 권장)
-    promptEl.addEventListener('keydown', (e) => {
+    document.getElementById('send').onclick = () => sendPrompt();
+    promptEl.onkeydown = (e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         sendPrompt();
       }
-    });
-
-    // 안내: 로컬 파일로 열면 일부 브라우저에서 CORS나 mixed content 문제 발생 가능.
-    // 권장: 간단한 정적 서버로 제공
-    // python -m http.server 8000
-    // 또는 VSCode Live Server 사용
+    };
   </script>
 </body>
 </html>
