@@ -1,362 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>운명의 주사위</title>
-    <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; color: #333; margin: 20px; }
-        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1 { color: #8b0000; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        
-        /* HP Status */
-        .status { display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center; }
-        .player-info { padding: 15px; border: 1px solid #ddd; border-radius: 8px; width: 45%; }
-        .human { background-color: #e6f7ff; }
-        .ai { background-color: #ffe6f7; }
-        .hp { font-size: 2.2em; font-weight: bold; margin-top: 5px; color: #3498db; }
-        
-        /* Game Log */
-        .log-area { max-height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; background-color: #fafafa; border-radius: 8px; margin-bottom: 20px; }
-        .log-entry { margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px dotted #eee; }
-        .attack { color: red; font-weight: bold; }
-        .defend { color: green; font-weight: bold; }
-        .special { color: blue; }
-
-        /* Player Hand Area */
-        .hand-area { border: 2px solid #333; padding: 15px; border-radius: 10px; background-color: #f0f0f0; }
-        .hand-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
-        .card-list { display: flex; flex-wrap: wrap; gap: 10px; min-height: 50px; }
-        .card { padding: 10px 15px; border: 2px solid #34495e; border-radius: 6px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-weight: bold; text-align: center; width: 120px; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); }
-        .card.selected { border-color: gold; box-shadow: 0 0 10px gold; background-color: #fffacd; }
-        .card.attack { background-color: #ffcccc; }
-        .card.defend { background-color: #ccffcc; }
-        .card.special { background-color: #ccccff; }
-        
-        /* Buttons */
-        .action-buttons { margin-top: 20px; display: flex; justify-content: space-between; }
-        .action-buttons button { padding: 10px 20px; border: none; border-radius: 5px; font-size: 1em; cursor: pointer; width: 48%; }
-        #end-turn-btn { background-color: #2ecc71; color: white; }
-        #end-turn-btn:hover { background-color: #27ae60; }
-        #reset-game-btn { background-color: #e74c3c; color: white; }
-        #reset-game-btn:hover { background-color: #c0392b; }
-        
-        .winner { font-size: 1.8em; color: #d9534f; font-weight: bold; text-align: center; margin-top: 20px; padding: 10px; border: 2px solid #d9534f; border-radius: 5px; display: none; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>쌌도르 ai</title>
+  <style>
+    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;margin:20px;background:#f7f9fb}
+    .card{max-width:900px;margin:0 auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(12,34,56,.06)}
+    input, textarea, button, select{font-size:14px;padding:8px;border:1px solid #ddd;border-radius:8px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+    textarea{min-height:72px;flex:1}
+    #log{white-space:pre-wrap;background:#fafafa;padding:12px;border-radius:8px;border:1px solid #eee;max-height:360px;overflow:auto}
+    small{color:#666}
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h2>똥쌌도르</h2>
 
-<div class="container">
-    <h1> 운명의 주사위</h1>
-    
-    <div class="status">
-        <div id="p1-info" class="player-info human">
-            <h2>플레이어 (P1) </h2>
-            <p>HP: <span id="p1-hp" class="hp">15</span></p>
-            <p>사용 가능한 액션: <span id="p1-actions">2</span></p>
-        </div>
-        <div id="p2-info" class="player-info ai">
-            <h2>AI (전모씨)</h2>
-            <p>HP: <span id="p2-hp" class="hp">15</span></p>
-            <p>전략: 방어/힐 중심</p>
-        </div>
-    </div>
-    
-    <div class="log-area" id="log-area">
-        <p>게임을 시작합니다. 첫 턴에 카드를 선택하고 '턴 종료' 버튼을 눌러주세요.</p>
+    <div class="row">
+      <input id="hfToken" type="password" placeholder="HF 토큰 (Bearer)" style="min-width:420px" />
+      <select id="model">
+        <option value="MLP-KTLim/llama-3-Korean-Bllossom-8B:featherless-ai">MLP-KTLim/llama-3-Korean-Bllossom-8B</option>
+        <option value="gpt2"</option>
+      </select>
+      <button id="save">토큰 저장</button>
+      <button id="clear">토큰 삭제</button>
     </div>
 
-    <div id="winner-display" class="winner"></div>
-
-    <div class="hand-area">
-        <div class="hand-title">🃏 플레이어 핸드: <span id="selected-cards-count">(0/2)</span> 선택됨</div>
-        <div class="card-list" id="player-hand-list">
-            </div>
+    <div class="row">
+      <textarea id="prompt">What is the capital of France?</textarea>
+      <button id="send">보내기</button>
     </div>
 
-    <div class="action-buttons">
-        <button id="end-turn-btn" onclick="endTurn()">턴 종료 및 사용</button>
-        <button id="reset-game-btn" onclick="initGame()">게임 리셋</button>
-    </div>
-</div>
+    <div id="log"></div>
 
-<script>
-// --- 게임 데이터 설정 ---
-const STARTING_HP = 15;
-const MAX_ACTIONS = 2; // 플레이어 턴당 최대 카드 사용 횟수
-const CARDS = {
-    // Attack Cards
-    '일격': { type: 'attack', effect: (p, t) => t.hp -= 2, log: (p, t) => `${p.name}이(가) <span class="attack">일격</span> 사용! ${t.name}에게 2 대미지.` },
-    '난사': { type: 'attack', effect: (p, t) => { const dmg = rollDice(1); t.hp -= dmg; return dmg; }, log: (p, t, dmg) => `${p.name}이(가) <span class="attack">난사</span> 사용! 주사위 ${dmg}로 ${t.name}에게 ${dmg} 대미지.` },
-    '필멸의 일격': { type: 'attack', effect: (p, t) => t.hp -= 5, log: (p, t) => `${p.name}이(가) <span class="attack">필멸의 일격</span> 사용! ${t.name}에게 5 대미지.` },
-    '약점 간파': { type: 'attack', effect: (p, t) => t.hp -= (t.hp <= 5 ? 4 : 2), log: (p, t) => `${p.name}이(가) <span class="attack">약점 간파</span> 사용! ${t.name}의 HP가 5 이하 ${t.hp <= 5 ? '이므로 4' : '가 아니므로 2'} 대미지.` },
-    '화염구': { type: 'attack', effect: (p, t) => t.hp -= 3, log: (p, t) => `${p.name}이(가) <span class="attack">화염구</span> 사용! ${t.name}에게 3 대미지.` },
+    <p><small>뭐 인마</small></p>
+  </div>
 
-    // Defense Cards
-    '방패': { type: 'defend', effect: (p, t) => p.def += 2, log: (p, t) => `${p.name}이(가) <span class="defend">방패</span> 사용! 다음 공격 2 대미지 감소.` },
-    '응급 치료': { type: 'defend', effect: (p, t) => p.hp += 3, log: (p, t) => `${p.name}이(가) <span class="defend">응급 치료</span> 사용! 자신의 HP 3 회복.` },
-    '강화 갑옷': { type: 'defend', effect: (p, t) => p.def += 1, log: (p, t) => `${p.name}이(가) <span class="defend">강화 갑옷</span> 사용! 다음 턴 동안 받는 대미지 1 감소.` },
-    
-    // Special Cards
-    '패 교체': { type: 'special', effect: (p, t) => { p.deck.push(...p.hand.splice(0, p.hand.length)); shuffle(p.deck); draw(p, 3); }, log: (p, t) => `${p.name}이(가) <span class="special">패 교체</span> 사용! 모든 핸드를 버리고 3장 드로우.` },
-    '운명의 주사위': { type: 'special', effect: (p, t) => { const sum = rollDice(2); if (sum % 2 === 0) { p.hp += sum; } else { t.hp -= sum; } return sum; }, log: (p, t, sum) => `${p.name}이(가) <span class="special">운명의 주사위</span> 사용! 주사위 합 ${sum} (${sum % 2 === 0 ? '짝수 - HP 회복' : '홀수 - 대미지'})!` },
-};
+  <script>
+    const hfInput = document.getElementById('hfToken');
+    const saveBtn = document.getElementById('save');
+    const clearBtn = document.getElementById('clear');
+    const modelSel = document.getElementById('model');
+    const promptEl = document.getElementById('prompt');
+    const sendBtn = document.getElementById('send');
+    const log = document.getElementById('log');
 
-function createDeck() {
-    return [
-        '일격', '일격', '난사', '약점 간파', '화염구', // 공격 5
-        '방패', '방패', '응급 치료', '강화 갑옷', '응급 치료', // 방어 5
-        '패 교체', '운명의 주사위', '운명의 주사위', '필멸의 일격', '강화 갑옷', // 특수/강력 5
-    ];
-}
+    // 로컬 스토리지에 토큰/모델 저장 (사용자 동의 필요)
+    hfInput.value = localStorage.getItem('HF_TOKEN') || '';
+    modelSel.value = localStorage.getItem('HF_MODEL') || modelSel.value;
 
-// --- 전역 변수 ---
-let player1, player2;
-let currentTurn = 0;
-let isGameOver = false;
-let selectedCards = []; // 플레이어가 선택한 카드
-
-// --- 유틸리티 및 렌더링 함수 ---
-function rollDice(num) {
-    let sum = 0;
-    for (let i = 0; i < num; i++) {
-        sum += Math.floor(Math.random() * 6) + 1;
-    }
-    return sum;
-}
-
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-function draw(player, count = 1) {
-    for (let i = 0; i < count; i++) {
-        if (player.deck.length > 0) {
-            player.hand.push(player.deck.pop());
-        }
-    }
-}
-
-function updateStatus() {
-    document.getElementById('p1-hp').textContent = player1.hp > 0 ? player1.hp : 0;
-    document.getElementById('p2-hp').textContent = player2.hp > 0 ? player2.hp : 0;
-    document.getElementById('p1-actions').textContent = `${MAX_ACTIONS - selectedCards.length}/${MAX_ACTIONS}`;
-}
-
-function log(message) {
-    const logArea = document.getElementById('log-area');
-    logArea.innerHTML += `<div class="log-entry">턴 ${currentTurn}: ${message}</div>`;
-    logArea.scrollTop = logArea.scrollHeight;
-}
-
-function renderHand() {
-    const handList = document.getElementById('player-hand-list');
-    handList.innerHTML = '';
-    
-    player1.hand.forEach((cardName, index) => {
-        const cardType = CARDS[cardName].type;
-        const cardDiv = document.createElement('div');
-        cardDiv.className = `card ${cardType} ${selectedCards.includes(index) ? 'selected' : ''}`;
-        cardDiv.textContent = cardName;
-        cardDiv.dataset.index = index;
-        cardDiv.onclick = () => toggleCardSelection(index);
-        handList.appendChild(cardDiv);
+    saveBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!hfInput.value.trim()) return alert('토큰을 입력하세요.');
+      localStorage.setItem('HF_TOKEN', hfInput.value.trim());
+      localStorage.setItem('HF_MODEL', modelSel.value);
+      alert('토큰 저장됨 (localStorage).');
     });
 
-    document.getElementById('selected-cards-count').textContent = `(${selectedCards.length}/${MAX_ACTIONS})`;
-    updateStatus();
-}
+    clearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('HF_TOKEN');
+      hfInput.value = '';
+      alert('토큰 삭제됨.');
+    });
 
-function toggleCardSelection(index) {
-    if (isGameOver) return;
-    
-    const idxInSelected = selectedCards.indexOf(index);
-    
-    if (idxInSelected !== -1) {
-        // 선택 해제
-        selectedCards.splice(idxInSelected, 1);
-    } else if (selectedCards.length < MAX_ACTIONS) {
-        // 선택 추가
-        selectedCards.push(index);
-    } else {
-        alert(`카드는 최대 ${MAX_ACTIONS}장까지 선택할 수 있습니다.`);
-    }
-    
-    renderHand();
-}
-
-// --- AI 로직 (강철 벽) ---
-function tankStrategy(p, t) {
-    let cardsToUse = [];
-    let handCopy = [...p.hand];
-
-    // 1. 긴급 힐 (HP 10 이하)
-    if (p.hp <= 10 && handCopy.includes('응급 치료')) {
-        cardsToUse.push('응급 치료');
-        handCopy.splice(handCopy.indexOf('응급 치료'), 1);
-    }
-    
-    // 2. 방어 강화
-    if (cardsToUse.length < 2 && handCopy.includes('강화 갑옷')) {
-        cardsToUse.push('강화 갑옷');
-        handCopy.splice(handCopy.indexOf('강화 갑옷'), 1);
-    }
-    if (cardsToUse.length < 2 && handCopy.includes('방패')) {
-        cardsToUse.push('방패');
-        handCopy.splice(handCopy.indexOf('방패'), 1);
+    function appendLine(text) {
+      log.textContent += text + '\n';
+      log.scrollTop = log.scrollHeight;
     }
 
-    // 3. 공격 (여유가 될 때)
-    if (cardsToUse.length < 2) {
-        if (handCopy.includes('난사')) cardsToUse.push('난사');
-        else if (handCopy.includes('운명의 주사위')) cardsToUse.push('운명의 주사위');
-        else if (handCopy.includes('일격')) cardsToUse.push('일격');
-    }
-    
-    // 최종 사용 카드 (최대 2장)
-    return cardsToUse.slice(0, MAX_ACTIONS);
-}
+    // 핵심: OpenAI JS 예제와 동일한 동작을 fetch로 구현
+    async function sendPrompt() {
+      const HF_TOKEN = localStorage.getItem('HF_TOKEN') || hfInput.value.trim();
+      if (!HF_TOKEN) return alert('HF 토큰이 필요합니다.');
 
+      const model = modelSel.value;
+      const userText = promptEl.value.trim();
+      if (!userText) return;
 
-// --- 게임 엔진 ---
-function checkWinCondition() {
-    let winner = null;
-    if (player1.hp <= 0) winner = player2.name;
-    if (player2.hp <= 0) winner = player1.name;
+      appendLine('> 사용자: ' + userText);
+      appendLine('...요청 중 (Hugging Face Router)');
 
-    if (winner) {
-        isGameOver = true;
-        document.getElementById('end-turn-btn').disabled = true;
-        const display = document.getElementById('winner-display');
-        display.textContent = `${winner} 승리!`;
-        display.style.display = 'block';
-        log(`*** 게임 종료! ${winner}의 승리입니다! ***`);
-        return true;
-    }
-    return false;
-}
+      const payload = {
+        model: model,
+        messages: [
+          { role: "user", content: userText }
+        ],
+        max_tokens: 512,
+        temperature: 0.2
+      };
 
-function processTurn(currentPlayer, opponent, cardsToPlay) {
-    if (isGameOver) return;
-    
-    currentPlayer.def = 0; // 방어력 초기화
-    
-    log(`--- ${currentPlayer.name}의 턴 시작 (HP: ${currentPlayer.hp}) ---`);
-    
-    // 1. 드로우 단계
-    draw(currentPlayer);
-    log(`${currentPlayer.name}이(가) 카드 1장 드로우. (핸드 ${currentPlayer.hand.length}장)`);
-    
-    // 2. 액션 단계 (카드 사용)
-    const cardIndices = currentPlayer.isHuman ? selectedCards.sort((a, b) => b - a) : null;
+      try {
+        const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + HF_TOKEN
+          },
+          body: JSON.stringify(payload),
+        });
 
-    for (const cardName of cardsToPlay) {
-        const card = CARDS[cardName];
-        
-        // 핸드에서 카드 제거 (인간: 인덱스로 제거, AI: 이름으로 제거)
-        if (currentPlayer.isHuman) {
-            const indexToRemove = cardIndices.pop(); // 뒤에서부터 제거
-            currentPlayer.hand.splice(indexToRemove, 1);
-        } else {
-            const index = currentPlayer.hand.indexOf(cardName);
-            if (index !== -1) currentPlayer.hand.splice(index, 1);
+        if (!res.ok) {
+          const text = await res.text().catch(() => res.statusText);
+          appendLine(`[HTTP ${res.status}] 오류 응답: ${text}`);
+          console.error('응답 본문:', text);
+          return;
         }
-        
-        // 효과 적용 전 상대방 HP 저장 (대미지 계산용)
-        const opponentPrevHp = opponent.hp;
-        
-        // 효과 적용
-        let effectResult = card.effect(currentPlayer, opponent);
-        
-        // 로그 기록
-        if (card.type === 'attack') {
-            // 방어력 적용 (간소화: 여기서 방어력 적용 대신 방어 카드 효과가 이미 Def에 누적된다고 가정)
-            let rawDamage = opponentPrevHp - opponent.hp;
-            let actualDamage = Math.max(0, rawDamage - opponent.def);
-            
-            // 실제 HP에 적용 (방어력만큼 되돌림)
-            opponent.hp += (rawDamage - actualDamage);
-            
-            log(card.log(currentPlayer, opponent, effectResult) + ` (방어력 ${opponent.def}로 ${rawDamage - actualDamage} 대미지 감소)`);
-        } else {
-             log(card.log(currentPlayer, opponent, effectResult));
-        }
-        
-        // 승패 확인
-        if (checkWinCondition()) return;
+
+        const data = await res.json();
+
+        // 원래 Node 코드에서 console.log(chatCompletion.choices[0].message);
+        // 동일하게 안전하게 파싱해서 출력
+        const choiceMessage = data?.choices?.[0]?.message ?? data?.choices?.[0]?.text ?? null;
+
+        appendLine('응답 원시 JSON:');
+        appendLine(JSON.stringify(data, null, 2));
+        appendLine('----');
+
+        appendLine('parsed (chatCompletion.choices[0].message):');
+        appendLine(choiceMessage ? JSON.stringify(choiceMessage, null, 2) : '응답에서 message 필드를 찾을 수 없음');
+
+        // 콘솔에도 동일한 형태로 출력 (요청하신대로)
+        console.log('chatCompletion (choices[0].message):', choiceMessage);
+      } catch (err) {
+        appendLine('요청 실패: ' + err.message);
+        console.error(err);
+      }
     }
-    
-    // 3. 턴 종료 정리
-    updateStatus();
-    currentPlayer.def = 0; // 다음 턴을 위해 방어력 초기화
-}
 
+    sendBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sendPrompt();
+    });
 
-// --- 턴 관리 및 시작 ---
-function initGame() {
-    player1 = { name: '플레이어', hp: STARTING_HP, deck: createDeck(), hand: [], def: 0, isHuman: true, strategy: null };
-    player2 = { name: 'AI (전모)', hp: STARTING_HP, deck: createDeck(), hand: [], def: 0, isHuman: false, strategy: tankStrategy };
+    // Enter만으로 보내기 (Ctrl+Enter 사용 권장)
+    promptEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendPrompt();
+      }
+    });
 
-    shuffle(player1.deck);
-    shuffle(player2.deck);
-
-    draw(player1, 3);
-    draw(player2, 3);
-
-    currentTurn = 0;
-    isGameOver = false;
-    selectedCards = [];
-    document.getElementById('log-area').innerHTML = `<p>*** 게임 시작! AI (전모씨)를를 상대로 승리하세요! ***</p>`;
-    document.getElementById('end-turn-btn').disabled = false;
-    document.getElementById('winner-display').style.display = 'none';
-
-    // 첫 턴은 플레이어 시작
-    currentTurn = 1;
-    log(`--- ${player1.name}의 턴 ---`);
-    draw(player1);
-    
-    renderHand();
-}
-
-async function endTurn() {
-    if (isGameOver) return;
-
-    document.getElementById('end-turn-btn').disabled = true;
-    
-    // 1. 플레이어 턴 처리
-    const cardsToPlayNames = selectedCards.map(index => player1.hand[index]);
-    processTurn(player1, player2, cardsToPlayNames);
-    
-    // 선택된 카드 리셋 및 핸드 업데이트
-    selectedCards = [];
-    renderHand(); 
-    
-    if (isGameOver) return;
-
-    // 2. AI 턴 처리 (딜레이를 주어 AI가 생각하는 느낌 연출)
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    
-    currentTurn++;
-    
-    const aiCardsToPlay = player2.strategy(player2, player1);
-    processTurn(player2, player1, aiCardsToPlay);
-
-    if (isGameOver) return;
-    
-    // 3. 다음 플레이어 턴 준비
-    currentTurn++;
-    log(`--- ${player1.name}의 턴 ---`);
-    draw(player1);
-    renderHand();
-    document.getElementById('end-turn-btn').disabled = false;
-}
-
-// 게임 로딩 시 초기화
-document.addEventListener('DOMContentLoaded', initGame);
-</script>
-
+    // 안내: 로컬 파일로 열면 일부 브라우저에서 CORS나 mixed content 문제 발생 가능.
+    // 권장: 간단한 정적 서버로 제공
+    // python -m http.server 8000
+    // 또는 VSCode Live Server 사용
+  </script>
 </body>
 </html>
